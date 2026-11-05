@@ -1,0 +1,21 @@
+{
+  "activeModule": "01-leads",
+  "taskTitle": "Mẫu khai báo nhiệm vụ hoạt động",
+  "taskDescription": "Chỉ định module đang được phát triển để khóa phạm vi sửa đổi của AI.",
+  "allowSharedCore": false,
+  "allowedDirectories": [
+    "apps/web/src/modules/01-leads",
+    "apps/web/src/app/(workspace)/leads",
+    "apps/api/src/modules/01-leads",
+    "apps/api/src/app/api/v1/leads",
+    "packages/contracts/src/01-leads",
+    "tests/e2e/01-leads",
+    "tests/fixtures/01-leads",
+    "docs/modules/01-leads.md"
+  ],
+  "alwaysAllowed": [
+    "docs/tasks/ACTIVE_TASK.json",
+    "docs/tasks"
+  ]
+}
+
