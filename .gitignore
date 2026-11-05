@@ -11,7 +11,7 @@ coverage/
 *.db-journal
 *.sqlite
 *.sqlite-journal
-storage/
+/storage/
 # Local credentials; retain a non-secret template
 .env
 .env.*
