@@ -165,19 +165,29 @@ export function validateLeadIntakeByChannel(input: WebhookLeadIntakeInput): void
 }
 
 function isUniqueConstraintError(err: unknown): boolean {
-  return (
-    err instanceof Prisma.PrismaClientKnownRequestError &&
-    err.code === 'P2002'
-  );
+  if (!err || typeof err !== 'object') return false;
+  if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') return true;
+  if ((err as { code?: unknown }).code === 'P2002') return true;
+  const msg = String((err as { message?: unknown }).message || '');
+  return msg.includes('Unique constraint failed');
 }
 
 function isSqliteBusyError(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false;
+  const code = (err as { code?: unknown }).code;
+  if (code === 'P2028' || code === 'P2034') return true;
   const msg = String((err as { message?: unknown }).message || '');
-  return msg.includes('SQLITE_BUSY') || msg.includes('database is locked') || msg.includes('TransactionWriteConflict');
+  return (
+    msg.includes('SQLITE_BUSY') ||
+    msg.includes('database is locked') ||
+    msg.includes('database table is locked') ||
+    msg.includes('TransactionWriteConflict') ||
+    msg.includes('Unable to start a transaction') ||
+    msg.includes('Timed out')
+  );
 }
 
-async function withConcurrencyRetry<T>(fn: () => Promise<T>, maxRetries = 5): Promise<T> {
+async function withConcurrencyRetry<T>(fn: () => Promise<T>, maxRetries = 12): Promise<T> {
   let attempt = 0;
   while (true) {
     try {
@@ -185,7 +195,7 @@ async function withConcurrencyRetry<T>(fn: () => Promise<T>, maxRetries = 5): Pr
     } catch (err) {
       if (isSqliteBusyError(err) && attempt < maxRetries) {
         attempt += 1;
-        await new Promise((r) => setTimeout(r, 15 * attempt));
+        await new Promise((r) => setTimeout(r, 25 * attempt));
         continue;
       }
       throw err;
@@ -227,7 +237,7 @@ export async function ingestLeadWithTrackingIdempotent(
     };
   };
 
-  const preCheck = await findExisting();
+  const preCheck = await withConcurrencyRetry(() => findExisting());
   if (preCheck) return preCheck;
 
   const actorType = provider === 'manual' ? 'user' : 'webhook';
@@ -237,8 +247,10 @@ export async function ingestLeadWithTrackingIdempotent(
       : `${provider}:${accountKey}`;
 
   try {
-    return await withConcurrencyRetry(() =>
-      client.$transaction(async (tx) => {
+    return await withConcurrencyRetry(async () => {
+      const existingBeforeTx = await findExisting();
+      if (existingBeforeTx) return existingBeforeTx;
+      return client.$transaction(async (tx) => {
         if (submissionId) {
           const insideTx = await tx.marketingTracking.findUnique({
             where: {
@@ -331,11 +343,11 @@ export async function ingestLeadWithTrackingIdempotent(
           tracking,
           deduplicated: false,
         };
-      }),
-    );
+      }, { maxWait: 10000, timeout: 20000 });
+    });
   } catch (err) {
     if (isUniqueConstraintError(err) && submissionId) {
-      const winner = await findExisting();
+      const winner = await withConcurrencyRetry(() => findExisting());
       if (winner) return winner;
     }
     throw err;

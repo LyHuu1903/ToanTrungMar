@@ -43,7 +43,9 @@ function sha256File(filePath) {
 }
 
 function createDisposableDbUrl(t, prefix) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), `tt-db-${prefix}-`));
+  const folderName = `.tmp-tt-db-${prefix}-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const tmpDir = path.join(PRISMA_DIR, folderName);
+  fs.mkdirSync(tmpDir, { recursive: true });
   t.after(() => {
     try {
       fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -51,8 +53,8 @@ function createDisposableDbUrl(t, prefix) {
       // Ignore Windows file lock cleanup delay
     }
   });
-  const dbFile = path.join(tmpDir, 'disposable.db').replace(/\\/g, '/');
-  const dbUrl = dbFile.startsWith('/') ? `file://${dbFile}` : `file:${dbFile}`;
+  const dbFile = path.join(tmpDir, 'disposable.db');
+  const dbUrl = `file:./${folderName}/disposable.db`;
   return { tmpDir, dbFile, dbUrl };
 }
 
