@@ -1,42 +1,46 @@
-# Toàn Trung — Marketing và Kinh doanh
+# Toàn Trung V2 — Hệ thống nội bộ Marketing và Kinh doanh
 
-Bản bàn giao 05/11/2026: **khung thư mục đầy đủ cho 5 nhóm**, tài liệu BA và công cụ kiểm tra/bàn giao AI. Các module còn trống; chưa triển khai website, DB, auth, provider, CI hoặc deploy.
+Monorepo Next.js + Prisma. Core (đăng nhập, phân quyền 8 vai trò BA, tài khoản, hồ sơ, thông báo, cài đặt thương hiệu) đã chạy; 5 module nghiệp vụ đang trống chờ 5 nhóm.
 
-Bắt đầu tại [AI_START_HERE.md](AI_START_HERE.md). AI chỉ cần task + [quy tắc](AGENTS.md) + [bối cảnh ngắn](AI_CONTEXT.md) + handoff module, rồi mở source/tài liệu liên quan khi cần.
-
-## Các vùng chính
-
-| Thư mục | Trách nhiệm |
-| --- | --- |
-| apps/web | FE, route mỏng, Core UI/session và 5 module |
-| apps/api | BE, auth/quyền, 5 module và worker khi có job |
-| packages/database | Một nguồn model và một migration history chung |
-| packages/contracts | DTO/schema thuần dùng chung FE–BE |
-| docs/modules | Nghiệp vụ, đầu vào/đầu ra và nghiệm thu của từng nhóm |
-| docs/handoffs | Trạng thái ngắn, phần đã làm và việc tiếp theo của module |
-| docs/tasks/m01…m05 | Task riêng mỗi nhóm; mẫu JSON chưa cấp quyền triển khai |
-| docs/sources | Ảnh/PDF và nguồn BA gốc để đối chiếu khi cần |
-| scripts / tests/tooling | Tạo ngữ cảnh, kiểm tra phạm vi và tài liệu; test công cụ |
-| infra | Vị trí cấu hình local/deploy tương lai |
-
-Tên module thống nhất ở FE–BE–contracts–test: `01-leads`, `02-tracking-sync`, `03-keywords-ads`, `04-reports`, `05-ai-design`. Mỗi nhóm theo trọn module; [MODULE_MAP](docs/MODULE_MAP.md) ghi người/branch/đường dẫn.
-
-## Lệnh hiện có
-
-Chưa cần cài dependency để chạy công cụ nội bộ. Cần Node.js và npm; test công cụ còn cần Git.
+## Chạy nhanh
 
 ```bash
-npm run context:task -- --module 01-leads --out .ai-context/m01.md
-npm run check:docs
-npm run test:tooling
+npm install
+npm run db:generate
+npm run db:push
+npm run db:seed
+npm run dev        # http://localhost:3000
 ```
 
-Kiểm tra phạm vi diff cần repo Git và module/task rõ: xem [COMMANDS](docs/COMMANDS.md). Chưa có `dev`, `build`, Prisma hoặc import-boundary check; không suy ứng dụng đã chạy từ test công cụ.
+Tài khoản demo (chỉ môi trường dev): `admin@toantrung.vn`, `sales@toantrung.vn`, `marketing@toantrung.vn`, `designer@toantrung.vn` — mật khẩu `ToanTrung@2026`.
 
-## Nguồn và quyết định
+## Cấu trúc
 
-Giữ nguyên [ma trận BA](docs/PERMISSIONS.md). Chi tiết UC/DFD nằm trong [hồ sơ module](docs/README.md), dữ liệu tại [ERD_COVERAGE](docs/database/ERD_COVERAGE.md). Chưa chốt DB provider và Prisma major; các mục cần quyết định ở [OPEN_QUESTIONS](docs/decisions/OPEN_QUESTIONS.md).
+| Thư mục | Nội dung |
+| --- | --- |
+| `apps/web` | Giao diện (route + Core UI + 5 module) |
+| `apps/api` | Backend (auth, quyền, Core, 5 module) |
+| `packages/database` | Prisma schema, một DB chung |
+| `packages/contracts` | DTO/schema dùng chung FE–BE |
+| `tests` | E2E và fixture theo module; test công cụ |
+| `scripts` | Công cụ kiểm tra tài liệu, phạm vi, tạo ngữ cảnh AI |
+| `docs` | Tài liệu (bên dưới) |
 
-Bản đích là Next.js/React/TypeScript/Tailwind, Route Handlers, Prisma và npm workspaces. Manifest hiện chỉ khai báo bốn workspace và lệnh công cụ, chưa khóa dependency/version. File nguồn nghiệp vụ được tạo khi có task thực tế, không sinh hàng loạt file rỗng giả hoàn thành.
+## Tài liệu — đọc theo nhu cầu
 
-Xem [mục lục](docs/README.md), [quy trình Git](docs/GIT_WORKFLOW.md) và [báo cáo kiểm tra bản bàn giao](docs/reviews/20261105-handoff-validation.md). `docs/archive/` chứa hồ sơ bootstrap cũ, chỉ dùng tra cứu lịch sử.
+| Cần gì | File |
+| --- | --- |
+| **Quy tắc bắt buộc cho người và AI** | [AGENTS.md](AGENTS.md) |
+| Bối cảnh ngắn cho AI | [AI_CONTEXT.md](AI_CONTEXT.md) |
+| Nhóm nào code ở thư mục nào | [docs/MODULE_MAP.md](docs/MODULE_MAP.md) |
+| Nghiệp vụ 5 module | [01-leads](docs/modules/01-leads.md) · [02-tracking-sync](docs/modules/02-tracking-sync.md) · [03-keywords-ads](docs/modules/03-keywords-ads.md) · [04-reports](docs/modules/04-reports.md) · [05-ai-design](docs/modules/05-ai-design.md) |
+| Trạng thái hiện tại từng module | `docs/handoffs/<module>.md` |
+| Lệnh, Git, task, bàn giao, nghiệm thu | [docs/QUY_TRINH.md](docs/QUY_TRINH.md) |
+| Phạm vi dự án, nguồn BA, kiến trúc | [docs/PROJECT.md](docs/PROJECT.md) |
+| Ma trận quyền 8 vai trò + đăng nhập | [docs/PERMISSIONS.md](docs/PERMISSIONS.md) |
+| Quy ước API/contract giữa nhóm | [docs/API_CONTRACTS.md](docs/API_CONTRACTS.md) |
+| An toàn dữ liệu | [docs/DATA_SAFETY.md](docs/DATA_SAFETY.md) |
+| Giao diện/thương hiệu | [docs/UI_GUIDELINES.md](docs/UI_GUIDELINES.md), [design brief](docs/design/ToanTrung_Antigravity_Design_Brief/START_HERE.md) |
+| Database (ERD, từ điển, owner bảng) | [docs/database/README.md](docs/database/README.md) |
+| Việc chưa chốt với BA | [docs/decisions/OPEN_QUESTIONS.md](docs/decisions/OPEN_QUESTIONS.md) |
+| Ảnh/PDF BA gốc | [docs/sources/README.md](docs/sources/README.md) |

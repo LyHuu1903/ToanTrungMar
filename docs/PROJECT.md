@@ -1,42 +1,106 @@
-# Phạm vi và trạng thái dự án
+# Dự án Toàn Trung V2 — Phạm vi, nguồn BA và kiến trúc
 
-Ngày hợp nhất: 05/11/2026. Nguồn nghiệp vụ: [S01/S02/S03/S04](sources/README.md), các ảnh BA và ERD kèm theo. Bộ này là tài liệu bàn giao, chưa phải đặc tả API/schema đã triển khai.
+Gộp từ PROJECT, BA_HANDOVER và ARCHITECTURE cũ. Nguồn nghiệp vụ gốc: [sources](sources/README.md) và [ERD PDF](sources/assets/ba-erd.pdf).
 
-## Mục tiêu
+## 1. Mục tiêu
 
-Tập trung Lead, tiến độ Sales, tracking và báo cáo; giảm nhập lặp, cảnh báo trùng, lưu lịch sử bàn giao/thất bại; hỗ trợ Marketing/Ads đối chiếu dữ liệu thực và Designer tạo bản nháp. Khách hàng là dữ liệu bên ngoài ứng dụng, không phải tài khoản đăng nhập.
+Hệ thống nội bộ quản lý Lead, tiến độ Sales, tracking và báo cáo; giảm nhập lặp, cảnh báo trùng, lưu lịch sử bàn giao/thất bại; hỗ trợ Marketing/Ads đối chiếu dữ liệu thật và Designer tạo bản nháp. Khách hàng là **dữ liệu**, không có tài khoản đăng nhập.
 
-## Năm module
+## 2. Năm module và Core
 
-| Module | Phạm vi | Nguồn BA chính |
+| Module | Phạm vi | Nguồn BA |
 | --- | --- | --- |
-| M01 | Lead + Pipeline, tiếp nhận/phân công, chuẩn hóa, trùng, Spam, lịch sử, tệp, chuyển Sales và theo dõi báo giá | UC01, UC02; DFD 1.0/2.0 |
-| M02 | Nguồn Lead, tracking, webhook, đồng bộ Google Ads/GA4/Search Console, lịch chạy | DFD 3.0, roadmap; UC03 được tham chiếu nhưng chưa có bản mô tả riêng |
-| M03 | Từ khóa/Ads/CPC/ngân sách; đề xuất phụ trách SEO tích hợp AI theo BFD/DFD | BFD, DFD 5.0, bảng phân nhóm |
-| M04 | Dashboard theo vai trò, 1 tuần/30 ngày/tùy chọn, thống kê sản phẩm/Lead/báo giá, Excel/Sheets | UC04, DFD 4.0 |
-| M05 | Bản nháp phối cảnh 3D, ảnh/banner, thư viện ấn phẩm, hoàn thiện/tải file, ghi thời gian/token | UC06, DFD 6.0 — giai đoạn 2 |
+| M01 `01-leads` | Lead + Pipeline: tiếp nhận/phân công, chuẩn hóa, trùng, Spam, lịch sử, tệp, chuyển Sales, theo dõi báo giá | UC01, UC02; DFD 1.0/2.0 |
+| M02 `02-tracking-sync` | Nguồn Lead, tracking, webhook, đồng bộ Google Ads/GA4/Search Console | DFD 3.0; UC03 chưa có mô tả riêng |
+| M03 `03-keywords-ads` | Từ khóa/Ads/CPC/ngân sách; SEO tích hợp AI | BFD, DFD 5.0 |
+| M04 `04-reports` | Dashboard theo vai trò, 1 tuần/30 ngày/tùy chọn, xuất Excel/Sheets | UC04, DFD 4.0 |
+| M05 `05-ai-design` | Nháp phối cảnh 3D, banner, thư viện ấn phẩm, thời gian/token | UC06, DFD 6.0 — giai đoạn 2 |
+| Core | Đăng nhập, người dùng, phân quyền, thông báo, hồ sơ, thương hiệu, storage, audit | DFD 7.0 |
 
-Core dùng chung: tài khoản/đăng nhập, quyền, HTTP, thông báo/hồ sơ, storage, logging, điều phối job và DB client. DFD 7.0 là Core; không tạo thêm nhóm thứ sáu.
+Số DFD không phải số nhóm: SEO (DFD 5.0) thuộc M03, không phải M05.
 
-## Người sử dụng và quyền
+| DFD | Ý nghĩa | Module | Kho dữ liệu |
+| --- | --- | --- | --- |
+| 1.0 | Tiếp nhận và phân Lead | M01 | D1 |
+| 2.0 | Theo dõi Pipeline/báo giá | M01 | D1 |
+| 3.0 | Tracking nguồn và đồng bộ | M02 | D3 |
+| 4.0 | Báo cáo/Dashboard | M04 | Đọc D1, D3, D5 |
+| 5.0 | Nội dung SEO tích hợp AI | M03 | D3, D4, D5 |
+| 6.0 | Thiết kế/phối cảnh | M05 | D6 |
+| 7.0 | Người dùng/phân quyền | Core | D2 |
 
-8 vai trò BA: Nhân viên Kinh doanh, Nhân viên Marketing, Designer, Nhân viên Ads, Trưởng phòng Marketing, Trưởng phòng Sales, Giám đốc, Quản trị viên. Giữ nguyên [ma trận BA](PERMISSIONS.md). Quyền chức năng được kết hợp biểu diễn ẩn danh và quy tắc use case; không suy quyền từ tên chức danh.
+Roadmap BA ~10 tuần: GĐ0 (tuần 1–2) khảo sát; GĐ1 (tuần 3–8) Lead–Tracking–Dashboard; GĐ2 (tuần 7–10) từ khóa/Ads và AI thiết kế.
 
-## Giai đoạn nghiệp vụ và mốc kỹ thuật
+## 3. Truy vết yêu cầu quan trọng
 
-Roadmap BA dự kiến 10 tuần: GĐ0 tuần 1–2 khảo sát/tài liệu; GĐ1 tuần 3–8 Lead–Tracking–Dashboard; GĐ2 tuần 7–10 từ khóa/Ads và AI thiết kế. Tuần 7–8 chạy song song. Đây là thời lượng tương đối, chưa có ngày bắt đầu được chốt.
+| ID | Nguồn | Yêu cầu | Module |
+| --- | --- | --- | --- |
+| BA-01 | UC01 | Webhook/nhập tay, chuẩn hóa SĐT, kiểm tra trùng khi tạo/sửa, không tự gộp | M01 |
+| BA-02 | UC01 | Tự phân hoặc "Chưa giao"; Sales online/đủ tải; tiếp nhận có thời điểm; Spam giữ Pipeline | M01 + Core |
+| BA-03 | UC01/UC03-4 | Marketing xem ẩn danh; Ads xem ẩn danh, chỉ sửa Nguồn/Chiến dịch | M01/M02 |
+| BA-04 | UC02 | Thất bại có lý do; chuyển Lead có kiểm tra người nhận, giữ trạng thái | M01 |
+| BA-05 | DFD 2.0 | Cảnh báo báo giá quá 7 ngày | M01 |
+| BA-06 | DFD 3.0 | Dữ liệu nguồn Google/website thật, lịch đồng bộ | M02 |
+| BA-07 | DFD 5.0 | SEO: đề tài/outline/nháp, từ khóa/traffic, duyệt bài, nhật ký AI | M03 |
+| BA-08 | UC04 | Dashboard theo vai trò, export đúng dữ liệu được xem | M04 |
+| BA-09 | UC06 | Nháp 3D/banner, thư viện/phiên bản, thời gian/token | M05 |
+| BA-10 | DFD | Không gửi SĐT/email/thông tin khách cho AI | Core + M03/M05 |
 
-DFD đánh dấu thiết kế/phối cảnh bằng nét đứt ở giai đoạn 2. Tiến trình SEO 5.0 chưa ghi giai đoạn riêng; lịch chi tiết cần thống nhất với roadmap trước khi giao task SEO. Không đổi thứ tự hoặc ngày nghiệm thu chỉ từ màu của sơ đồ.
+Giới hạn phải giữ: giữ 3 nhóm sản phẩm BA; không portal khách hàng/đăng ký công khai; chưa đưa giá bán/doanh số lên app (chi phí Ads/AI vẫn theo BA); video ngắn chưa phải tính năng cam kết. Điểm chưa chốt ghi tại [OPEN_QUESTIONS](decisions/OPEN_QUESTIONS.md).
 
-Mốc kỹ thuật tài liệu/khung/auth/module/tích hợp là cách tổ chức task, không thay lịch nghiệp vụ BA. Hiện có bộ tài liệu, khung thư mục và công cụ bàn giao/kiểm tra; các chức năng đều chưa triển khai. Dev/test dùng dữ liệu mẫu tổng hợp; kết nối tài khoản và dữ liệu thật là công việc riêng ở bước cuối theo roadmap BA.
+## 4. Kiến trúc
 
-## Giới hạn phải giữ
+Một npm monorepo, 4 workspace:
 
-- Giữ 3 nhóm sản phẩm BA và danh mục cụ thể; không tự thay bằng vài lựa chọn LED cố định.
-- Chưa có portal khách hàng, đăng ký công khai, AI phân loại Lead hoặc AI đọc dữ liệu khách.
-- Theo feedback UI, chưa đưa giá bán/dự toán/chiết khấu/bảo hành và thẻ doanh số lên ứng dụng. Chi phí Ads/AI vẫn thuộc BA.
-- Một số hình module/BPMN có doanh thu, ROI và phê duyệt ngân sách nhưng UC/ERD chưa mô tả đủ và feedback đang giới hạn tiền báo khách: giữ dấu nguồn, xử lý [Q08](decisions/OPEN_QUESTIONS.md#q08) trước khi triển khai các mục đó.
-- Video ngắn là hướng nghiên cứu trong roadmap/BFD; UC06 hiện mô tả phối cảnh và ảnh/banner. Chưa hứa tính năng video hoàn chỉnh.
-- Kết nối các website hiện có; roadmap không giao làm lại giao diện website công ty.
+| Workspace | Vai trò |
+| --- | --- |
+| `apps/web` | Next.js 14 + React + Tailwind. `src/app` là route; giao diện module ở `src/modules/<module>` |
+| `apps/api` | Route Handlers + logic backend. `src/app/api/v1` là HTTP; logic ở `src/core` và `src/modules/<module>` |
+| `packages/database` | Prisma. `prisma/schema.prisma` + `prisma/models/*.prisma` gộp thành **một DB chung** |
+| `packages/contracts` | DTO/Zod schema thuần, dùng chung FE–BE |
 
-Đề xuất công nghệ và các ranh giới nằm ở [ARCHITECTURE](ARCHITECTURE.md); phần nghiệp vụ chưa mô hình hóa đủ nằm ở [BA_HANDOVER](BA_HANDOVER.md).
+Hiện trạng: Core đã chạy (đăng nhập scrypt + session HttpOnly + CSRF, 8 vai trò/12 quyền, quản lý tài khoản, hồ sơ/avatar, thông báo, cài đặt thương hiệu). DB local là SQLite; production dự kiến PostgreSQL. 5 module đang ở trạng thái trống chờ các nhóm.
+
+```mermaid
+flowchart TD
+    U["Nhân sự theo 8 vai trò BA"] --> F["Frontend apps/web"]
+    F -->|"chỉ gọi HTTP"| H["API + session"]
+    H --> P["Kiểm tra quyền và phạm vi"]
+    P --> M["Use case của module"]
+    M --> R["Repository / Prisma"]
+    R --> D[("Một DB chung")]
+    M --> S["Storage riêng tư"]
+    M --> X["Adapter Google / AI"]
+```
+
+Cấu trúc gợi ý bên trong một module (chỉ tách khi cần):
+
+| File | Trách nhiệm |
+| --- | --- |
+| FE `index.ts`, `api.ts`, `components/` | Giao diện, gọi HTTP qua contracts, trạng thái loading/empty/error |
+| BE `public.ts` | Hàm public cho module khác dùng |
+| BE `policy.ts` | Quyền BA và phạm vi dữ liệu |
+| BE `service.ts` | Nghiệp vụ và transaction |
+| BE `repository.ts` | Truy vấn DB của module |
+| `__tests__/` | Test hành vi |
+
+Hướng phụ thuộc giữa module (chỉ qua public contract, không import vòng):
+
+```mermaid
+flowchart TD
+    M04["M04 Báo cáo"] --> M01["M01"]
+    M04 --> M02["M02"]
+    M04 --> M03["M03"]
+    M04 --> M05["M05"]
+    M02 --> M01
+    M02 --> M03
+    M03 --> M01
+    M05 --> M01
+```
+
+- FE không import Prisma/DB/secret. Core không import module. Contracts không import server/DB.
+- M04 không tự query bảng nguồn; dùng read contract do owner cung cấp.
+- Transaction ngắn, không gọi provider/upload bên trong transaction.
+- File thương hiệu công khai ở `apps/web/public/brand`; file khách/thiết kế dùng storage riêng có kiểm tra quyền.
+
+Chi tiết DB: [database](database/README.md). Phân công thư mục: [MODULE_MAP](MODULE_MAP.md).

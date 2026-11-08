@@ -383,3 +383,246 @@ export const UpdateBrandingMetaSchema = z.object({
 });
 
 export type UpdateBrandingMetaDto = z.infer<typeof UpdateBrandingMetaSchema>;
+
+/**
+ * Monetary & BigInt Safe Serialization Helpers (Shared FE/BE)
+ * 1 currency unit = 1,000,000 micros.
+ */
+export const CONTRACT_MICRO_SCALE = 1_000_000n;
+
+export const BigIntStringSchema = z
+  .string()
+  .trim()
+  .regex(/^-?\d+$/, 'Giá trị số nguyên lớn (BigInt) phải là chuỗi chữ số hợp lệ.');
+
+export interface MonetaryAmountDto {
+  /** Chuỗi số nguyên biểu diễn đơn vị nhỏ nhất (VNĐ nguyên hoặc micros) để JSON không mất độ chính xác */
+  rawAmountString: string;
+  /** Đơn vị tiền tệ gốc (VD: 'VND' | 'USD') — không tự quy đổi tỷ giá khi chưa có nguồn */
+  currency: 'VND' | 'USD';
+  /** Đơn vị thang đo: 'unit' (1 = 1 VNĐ) hoặc 'micros' (1,000,000 = 1 đơn vị tiền tệ) */
+  scale: 'unit' | 'micros';
+  /** Chuỗi thập phân hiển thị chuẩn xác (VD: "1250000" hoặc "0.0425") */
+  formattedDecimal: string;
+}
+
+export function formatMicrosToDecimal(micros: bigint): string {
+  const isNeg = micros < 0n;
+  const abs = isNeg ? -micros : micros;
+  const whole = abs / CONTRACT_MICRO_SCALE;
+  const frac = abs % CONTRACT_MICRO_SCALE;
+  if (frac === 0n) return `${isNeg ? '-' : ''}${whole.toString(10)}`;
+  const fracStr = frac.toString(10).padStart(6, '0').replace(/0+$/, '');
+  return `${isNeg ? '-' : ''}${whole.toString(10)}.${fracStr}`;
+}
+
+export function toMonetaryAmountDto(
+  amount: bigint | null | undefined,
+  currency: 'VND' | 'USD',
+  scale: 'unit' | 'micros',
+): MonetaryAmountDto | null {
+  if (amount === null || amount === undefined) return null;
+  return {
+    rawAmountString: amount.toString(10),
+    currency,
+    scale,
+    formattedDecimal: scale === 'micros' ? formatMicrosToDecimal(amount) : amount.toString(10),
+  };
+}
+
+/**
+ * Shared BA Lead Tier Predicates (L1 / L2 / L3) — Single Source of Truth for M02 & M04
+ */
+export function isL2Valid(lead: { isSpam: boolean }): boolean {
+  return !lead.isSpam;
+}
+
+export function isL3Effective(lead: {
+  isSpam: boolean;
+  spamAdsExclusionStatus?: string | null;
+}): boolean {
+  return (
+    !lead.isSpam ||
+    (lead.spamAdsExclusionStatus !== 'auto_excluded' &&
+      lead.spamAdsExclusionStatus !== 'confirmed_excluded')
+  );
+}
+
+export function getL2PrismaWhere() {
+  return { isSpam: false } as const;
+}
+
+export function getL3PrismaWhere() {
+  return {
+    OR: [
+      { isSpam: false },
+      {
+        spamAdsExclusionStatus: {
+          notIn: ['auto_excluded', 'confirmed_excluded'],
+        },
+      },
+    ],
+  };
+}
+
+export const REPORT_PRESETS = ['7d', '30d', 'all', 'custom'] as const;
+export type ReportPreset = (typeof REPORT_PRESETS)[number];
+
+export interface SalesPerformanceRowDto {
+  salesUserId: number;
+  salesFullName: string;
+  isOnline: boolean;
+  isReceivingLeads: boolean;
+  totalLeads: number;
+  newLeads: number;
+  quotingLeads: number;
+  quoteSentLeads: number;
+  wonLeads: number;
+  lostLeads: number;
+  unansweredOverdue7d: number;
+  winRateText: string;
+}
+
+export interface ProductInsightRowDto {
+  productId: number;
+  productCode: string;
+  productName: string;
+  category: 'MAN_HINH_LED' | 'BANG_DIEN_TU' | 'KHAC';
+  inquiryCount: number;
+  wonCount: number;
+}
+
+export interface UnansweredQuoteItemDto {
+  leadId: number;
+  leadCode: string;
+  companyOrContact: string;
+  phone: string;
+  assignedSalesName: string;
+  quoteSentAt: string;
+  daysWaiting: number;
+  isOverdue7Days: boolean;
+  productSummary: string;
+}
+
+export interface DetailedReportLeadRowDto {
+  stt: number;
+  leadCode: string;
+  receivedAt: string;
+  assignedSalesName: string;
+  companyOrCustomer: string;
+  phone: string;
+  contactChannel: string;
+  marketingSource: string;
+  productsText: string;
+  pipelineStatusLabel: string;
+  noteOrReason: string;
+  isAnonymized: boolean;
+}
+
+export interface ActionableTaskItemDto {
+  id:
+    | 'unaccepted_leads'
+    | 'overdue_quotes'
+    | 'pending_designs'
+    | 'seo_approvals'
+    | 'publication_failures'
+    | 'sync_failures';
+  title: string;
+  description: string;
+  count: number;
+  severity: 'critical' | 'warning' | 'info';
+  moduleLabel: string;
+  href: string;
+}
+
+export interface MarketingSourcePerformanceRowDto {
+  key: string;
+  sourceName: string;
+  campaignName: string;
+  spend: MonetaryAmountDto | null;
+  platformConversions: number;
+  crmLeadsL1: number;
+  crmValidL2: number;
+  crmEffectiveL3: number;
+  wonCount: number;
+}
+
+export interface LeadTrendPointDto {
+  date: string;
+  label: string;
+  totalL1: number;
+  validL2: number;
+  wonCount: number;
+}
+
+export interface ReportsDashboardDto {
+  scopeRole: string;
+  scopeDescription: string;
+  preset: ReportPreset;
+  fromDate: string;
+  toDate: string;
+  generatedAt: string;
+  isSmallSample: boolean;
+  smallSampleNotice: string | null;
+  todayPreliminaryNotice: string;
+  lastSyncedAt: string | null;
+  overview: {
+    totalLeadsL1: number;
+    validLeadsL2: number;
+    effectiveLeadsL3: number;
+    activeLeadsCount: number;
+    unreceivedLeadsCount: number;
+    newLeadCount: number;
+    quotingCount: number;
+    quoteSentCount: number;
+    wonCount: number;
+    lostCount: number;
+    unansweredQuoteCount: number;
+    overdue7DaysQuoteCount: number;
+    winRateText: string;
+  };
+  leadTrend: LeadTrendPointDto[];
+  actionableTasks: ActionableTaskItemDto[];
+  byChannel: Array<{
+    channel: string;
+    label: string;
+    count: number;
+  }>;
+  salesPerformance: SalesPerformanceRowDto[];
+  productInsights: ProductInsightRowDto[];
+  unansweredQuotes: UnansweredQuoteItemDto[];
+  marketingSummary: {
+    totalAdsSpend: MonetaryAmountDto | null;
+    platformReportedConversions: number;
+    effectiveLeadsFromAds: number;
+    cplEffective: MonetaryAmountDto | null;
+    publishedSeoArticles: number;
+    draftSeoArticles: number;
+    scheduledSeoArticles: number;
+    failedPublishArticles: number;
+    optimizationNeededArticles: number;
+    bySourceCampaign: MarketingSourcePerformanceRowDto[];
+  };
+  trackingOperationalSummary: {
+    liveIntegrationMode: boolean;
+    configuredConnectionsCount: number;
+    totalConnectionsCount: number;
+    openAlertsCount: number;
+    failingConnectionsCount: number;
+    gclidPendingRetryCount: number;
+    wordpressConfigured: boolean;
+    geminiConfigured: boolean;
+  };
+  designSummary: {
+    totalRequests: number;
+    pendingCount: number;
+    inReviewCount: number;
+    completed3dCount: number;
+    completedBannerCount: number;
+    avgProcessingSecText: string;
+    totalAiTokens: number;
+    totalAiCost: MonetaryAmountDto | null;
+  };
+  detailedLeads: DetailedReportLeadRowDto[];
+}
+

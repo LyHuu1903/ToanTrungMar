@@ -16,13 +16,13 @@ Việc cần làm: Chốt provider/major/runtime rồi lập ADR trước khi sc
 
 ## Q02
 
-**UC03 và đặc tả Tracking/SEO.** Trạng thái: MỞ.
+**UC03 và đặc tả Tracking/SEO (Mâu thuẫn quyền sửa Nguồn/Chiến dịch).** Trạng thái: MỞ.
 
-Nguồn/khác biệt: M02/M03 có tab trống; UC01 gọi UC03-1/UC03-4. DFD 5.0 có SEO nhưng chưa có use case đủ.
+Nguồn/khác biệt: Đã có tài liệu UC03 và UC05, tuy nhiên còn mâu thuẫn trực tiếp giữa **UC01 / PERMISSIONS.md** (ghi chỉ Nhân viên Ads được chỉnh Nguồn/Chiến dịch theo `UC03-4`) và **UC03 BR5** (ghi Chiến dịch/Nguồn marketing do hệ thống tự ghi nhận, không ai được sửa tay kể cả Marketing, Ads). Ngoài ra chưa chốt ai có thẩm quyền cuối cùng xác nhận Spam (`spamStatus = CONFIRMED`) khi Marketing và Kinh doanh đánh giá khác nhau.
 
-Đầu mối đề nghị: BA + Nhóm 2 + Nhóm 3.
+Đầu mối đề nghị: BA + Nhóm 1 + Nhóm 2 + Nhóm 3.
 
-Việc cần làm: Bổ sung input/output, quyền sửa Nguồn/Chiến dịch, validation/history và luồng SEO; mapping SEO → M03 là đề xuất tổ chức.
+Việc cần làm: BA xác nhận giữ quyền sửa tay có kiểm soát cho `ADS` (`UC03-4`) hay khóa hoàn toàn theo `UC03 BR5`, và chốt vai trò duyệt cuối cho Spam. Giữ nguyên ma trận quyền hiện tại, chưa tự ý mở hay đóng quyền này trong code.
 
 ## Q03
 

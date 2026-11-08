@@ -24,7 +24,7 @@ Nguồn: bảng phân nhóm người dùng cung cấp; [ảnh nguồn](sources/a
 - Fixture: `tests/fixtures/01-leads/`.
 - Tài liệu: `docs/modules/01-leads.md`.
 
-Model là vị trí thiết kế, chưa có DDL hoặc file model trong gói này. Unit/API integration đặt cạnh logic liên quan.
+Model đã được định nghĩa tại `packages/database/prisma/models/` theo quyền sở hữu bảng tại [TABLE_OWNERSHIP](database/TABLE_OWNERSHIP.md). Unit/API integration đặt cạnh logic liên quan.
 
 ### Nhóm 2 — 02-tracking-sync
 
@@ -38,7 +38,7 @@ Model là vị trí thiết kế, chưa có DDL hoặc file model trong gói nà
 - Fixture: `tests/fixtures/02-tracking-sync/`.
 - Tài liệu: `docs/modules/02-tracking-sync.md`.
 
-Model là vị trí thiết kế, chưa có DDL hoặc file model trong gói này. Unit/API integration đặt cạnh logic liên quan.
+Model đã được định nghĩa tại `packages/database/prisma/models/` theo quyền sở hữu bảng tại [TABLE_OWNERSHIP](database/TABLE_OWNERSHIP.md). Unit/API integration đặt cạnh logic liên quan.
 
 ### Nhóm 3 — 03-keywords-ads
 
@@ -52,7 +52,7 @@ Model là vị trí thiết kế, chưa có DDL hoặc file model trong gói nà
 - Fixture: `tests/fixtures/03-keywords-ads/`.
 - Tài liệu: `docs/modules/03-keywords-ads.md`.
 
-Model là vị trí thiết kế, chưa có DDL hoặc file model trong gói này. Unit/API integration đặt cạnh logic liên quan.
+Model đã được định nghĩa tại `packages/database/prisma/models/` theo quyền sở hữu bảng tại [TABLE_OWNERSHIP](database/TABLE_OWNERSHIP.md). Unit/API integration đặt cạnh logic liên quan.
 
 ### Nhóm 4 — 04-reports
 
@@ -66,7 +66,7 @@ Model là vị trí thiết kế, chưa có DDL hoặc file model trong gói nà
 - Fixture: `tests/fixtures/04-reports/`.
 - Tài liệu: `docs/modules/04-reports.md`.
 
-Model là vị trí thiết kế, chưa có DDL hoặc file model trong gói này. Unit/API integration đặt cạnh logic liên quan.
+Model đã được định nghĩa tại `packages/database/prisma/models/` theo quyền sở hữu bảng tại [TABLE_OWNERSHIP](database/TABLE_OWNERSHIP.md). Unit/API integration đặt cạnh logic liên quan.
 
 ### Nhóm 5 — 05-ai-design
 
@@ -80,7 +80,7 @@ Model là vị trí thiết kế, chưa có DDL hoặc file model trong gói nà
 - Fixture: `tests/fixtures/05-ai-design/`.
 - Tài liệu: `docs/modules/05-ai-design.md`.
 
-Model là vị trí thiết kế, chưa có DDL hoặc file model trong gói này. Unit/API integration đặt cạnh logic liên quan.
+Model đã được định nghĩa tại `packages/database/prisma/models/` theo quyền sở hữu bảng tại [TABLE_OWNERSHIP](database/TABLE_OWNERSHIP.md). Unit/API integration đặt cạnh logic liên quan.
 
 ## Vùng dùng chung
 
@@ -94,4 +94,4 @@ Một bảng có owner ghi theo [TABLE_OWNERSHIP](database/TABLE_OWNERSHIP.md). 
 
 DFD 1.0/2.0 → M01; 3.0 → M02; 4.0 → M04; 5.0 SEO → đề xuất M03; 6.0 → M05 giai đoạn 2; 7.0 → Core. Giữ 5 nhóm, không đặt M05 thành SEO vì trùng số 5.0.
 
-Bảng phân nhóm ban đầu ghi đang nghiên cứu; bộ tài liệu không xác nhận source đã được push đủ hoặc chức năng hoàn thành. Cách mở PR/đồng bộ được quy định tại [GIT_WORKFLOW](GIT_WORKFLOW.md).
+Bảng phân nhóm ban đầu ghi đang nghiên cứu; bộ tài liệu không xác nhận source đã được push đủ hoặc chức năng hoàn thành. Cách mở PR/đồng bộ được quy định tại [QUY_TRINH](QUY_TRINH.md).

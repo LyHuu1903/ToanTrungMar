@@ -40,4 +40,4 @@ Không sửa migration đã áp dụng; một người điều phối thứ tự
 
 RPO/RTO, retention, PITR và lịch restore chưa được doanh nghiệp chốt. Backup DB và file cần bản sao/credential tách runtime; restore thử sang môi trường cách ly, kiểm tra bản ghi, quan hệ, quyền và liên kết asset, ghi thời gian thực. File backup, replica hoặc soft delete không thay bằng chứng restore.
 
-Không tự nhập/chuyển dữ liệu hệ cũ. Nếu được giao, giữ nguồn read-only, map trường/enum/ID/ngày, chạy staging theo batch, đối soát và có kế hoạch cutover/khôi phục. Xem [runbooks](runbooks/README.md) để lập runbook thật khi có hạ tầng.
+Không tự nhập/chuyển dữ liệu hệ cũ. Nếu được giao, giữ nguồn read-only, map trường/enum/ID/ngày, chạy staging theo batch, đối soát và có kế hoạch cutover/khôi phục. Xem [quy tr�nh](QUY_TRINH.md) để lập runbook thật khi có hạ tầng.

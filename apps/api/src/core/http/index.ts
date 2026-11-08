@@ -33,7 +33,11 @@ export function jsonSuccess<T, M = Record<string, unknown>>(
   headers?: HeadersInit,
 ): NextResponse<ApiSuccess<T, M>> {
   return NextResponse.json(
-    meta ? { data, meta } : { data },
+    {
+      ok: true as const,
+      data,
+      ...(meta !== undefined ? { meta } : {}),
+    },
     {
       status,
       headers: {

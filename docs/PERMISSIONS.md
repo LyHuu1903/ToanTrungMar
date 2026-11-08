@@ -60,4 +60,16 @@ Backend kiểm tra session còn hiệu lực, user active, action, scope tài ng
 
 Role Admin có các ô được cấp như ma trận; không tự thêm “bypass mọi rule nghiệp vụ”. Các quy tắc lý do, trạng thái, lưu lịch sử vẫn là bất biến use case trừ khi BA có ngoại lệ rõ.
 
-Không tự tạo public signup, tài khoản mặc định hoặc nút điền nhanh vai trò. Tài khoản do Admin cấp. Cơ chế session/revocation và lưu credential là thiết kế kỹ thuật chưa triển khai: [AUTH_AND_ACCESS](AUTH_AND_ACCESS.md).
+Không tự tạo public signup, tài khoản mặc định hoặc nút điền nhanh vai trò. Tài khoản do Admin cấp.
+
+## Đăng nhập, phiên và credential (Core đã triển khai)
+
+| Thành phần | Hiện trạng |
+| --- | --- |
+| Mật khẩu | Lưu `password_hash` bằng scrypt; không lưu/ghi log mật khẩu gốc |
+| Phiên | Cookie `HttpOnly`, `SameSite=Lax`, `Secure` ở production; bảng `user_sessions` lưu hash token, hết hạn 12 giờ, thu hồi khi đăng xuất/khóa/xóa tài khoản |
+| CSRF | Mọi request ghi phải gửi header `x-csrf-token` khớp phiên |
+| Kiểm tra quyền | Backend kiểm tra phiên, tài khoản active, action, phạm vi trước khi đọc/ghi; ẩn menu ở FE không thay kiểm tra API |
+| Credential Google/AI/storage | Chỉ ở backend/worker; không đưa vào UI, `NEXT_PUBLIC_*`, Git, log hoặc response lỗi |
+
+Các ca phải có test khi module dùng quyền: đăng nhập sai, tài khoản khóa, phiên hết hạn/thu hồi, truy cập URL trực tiếp, ID ngoài phạm vi, DTO ẩn danh, export/file/job dùng cùng quyền. Danh tính webhook/service cần cơ chế riêng, không gán mọi Lead tự động cho một Admin giả. Điểm còn mở về phiên/token: [Q11](decisions/OPEN_QUESTIONS.md#q11).

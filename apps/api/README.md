@@ -1,11 +1,12 @@
-# Backend Toàn Trung
+# Backend Toàn Trung (`apps/api`)
 
-Workspace đích apps/api, Next.js Route Handlers/TypeScript theo kiến trúc; chưa có handlers, auth, worker hoặc kết nối DB chạy thật trong gói tài liệu.
+Route Handlers TypeScript, được `apps/web` re-export để chạy chung một server.
 
-src/app/api/v1/ chỉ composition/HTTP; src/modules/ chứa 5 module; src/core/ chứa auth/quyền/HTTP/audit/storage/notifications/jobs/config; src/workers/ chỉ có code khi job thật cần.
+- `src/app/api/v1/` — HTTP. Core: `auth`, `users`, `profile`, `notifications`, `settings`. 5 nhóm: `leads`, `tracking`, `ads`, `reports`, `design`.
+- `src/core/` — auth (scrypt, session, CSRF), permissions (8 vai trò/12 quyền), http, audit, storage (lọc ảnh, thương hiệu), notifications, config.
+- `src/modules/<module>/` — logic nghiệp vụ của từng nhóm.
+- `src/core/__tests__/` — test Core (`npm run test:core`).
 
-Luồng: xác thực → quyền/scope BA → schema input → use case → repository → output serializer. DTO Marketing/Ads theo UC01 ẩn danh; Ads chỉ sửa nguồn/campaign theo UC03-4. Chưa tự cấp quyền bằng tên chức danh hoặc role của developer.
+Luồng: xác thực → quyền/phạm vi BA → kiểm tra input bằng schema → use case → repository → trả dữ liệu theo quyền (Marketing/Ads nhận DTO ẩn danh theo UC01). Module khác chỉ dùng `public.ts`; Core không import module. Transaction ngắn, không gọi provider/upload bên trong.
 
-Module khác dùng public.ts; Core không import module. Transaction ngắn giữ ghi liên quan nhất quán; provider/upload/tác vụ dài ngoài transaction. Worker cùng codebase, không tách microservice chỉ để đủ sơ đồ.
-
-Đọc [AUTH_AND_ACCESS](../../docs/AUTH_AND_ACCESS.md), [API_CONTRACTS](../../docs/API_CONTRACTS.md), [MODULE_MAP](../../docs/MODULE_MAP.md). Chưa có command runtime: [COMMANDS](../../docs/COMMANDS.md).
+Xem [PERMISSIONS](../../docs/PERMISSIONS.md), [API_CONTRACTS](../../docs/API_CONTRACTS.md), [MODULE_MAP](../../docs/MODULE_MAP.md), [QUY_TRINH](../../docs/QUY_TRINH.md).

@@ -1,54 +1,81 @@
-# 05-ai-design — AI hỗ trợ thiết kế
+# 05-ai-design — Hỗ trợ thiết kế & phối cảnh AI (Giai đoạn 2)
 
-**Nhóm 5 — phụ trách: Lý Tăng Hữu.** Branch: `feature/ai-design`. Trạng thái: **CHƯA TRIỂN KHAI trong gói tài liệu**. Nguồn nghiệp vụ: [BA](../sources/README.md#s04), [ma trận quyền](../PERMISSIONS.md); mục bên dưới tóm tắt nghiệp vụ, không thay nguồn BA.
+**Nhóm 5 — Phụ trách: Lý Tăng Hữu.**  
+Nhánh Git: `feature/ai-design`.  
+Nguồn đặc tả chuẩn: **Tài liệu đặc tả BA (UC06: Hỗ trợ thiết kế & phối cảnh AI)** ngày 05/11/2026.
 
-## Vùng phát triển của nhóm
+---
 
-| Lớp | Đường dẫn |
-| --- | --- |
-| FE | apps/web/src/modules/05-ai-design/ |
-| FE route | apps/web/src/app/(workspace)/design/ |
-| BE | apps/api/src/modules/05-ai-design/ |
-| API route | apps/api/src/app/api/v1/design/ |
-| Contracts | packages/contracts/src/05-ai-design/ |
-| Model tương lai | packages/database/prisma/models/05-ai-design.prisma — chưa tạo |
-| E2E/fixture | tests/e2e/05-ai-design/ và tests/fixtures/05-ai-design/ |
+## 1. Vùng phát triển của Nhóm 5
 
-Các file chung và nguyên tắc public interface xem [MODULE_MAP](../MODULE_MAP.md), [ARCHITECTURE](../ARCHITECTURE.md), [API_CONTRACTS](../API_CONTRACTS.md). Tham chiếu Qxx trong hồ sơ này nằm ở [OPEN_QUESTIONS](../decisions/OPEN_QUESTIONS.md).
+| Lớp | Đường dẫn mã nguồn |
+| :--- | :--- |
+| **Giao diện (Frontend)** | `apps/web/src/modules/05-ai-design/` |
+| **Trang hiển thị (Page Route)** | `apps/web/src/app/(workspace)/design/page.tsx` |
+| **Xử lý Backend** | `apps/api/src/modules/05-ai-design/` |
+| **Endpoint API** | `apps/api/src/app/api/v1/design/route.ts` |
+| **Hợp đồng dữ liệu (Contracts/DTO)** | `packages/contracts/src/05-ai-design/` |
+| **Prisma Model** | `packages/database/prisma/models/05-ai-design.prisma` |
+| **Kiểm thử E2E & Mock Fixture** | `tests/e2e/05-ai-design/` và `tests/fixtures/05-ai-design/` |
+| **Task nhóm** | `docs/tasks/m05/` |
 
+---
 
-## Giai đoạn 2 — UC06
+## 2. Mô tả tổng quan Use Case 06 (UC06)
 
-Designer tạo bản nháp phối cảnh 3D LED theo ảnh hiện trạng, kiểu dáng/loại LED, kích thước/vị trí lắp và prompt; hoặc tạo ảnh/banner theo kích thước/tỷ lệ. Kết quả AI là nháp để Designer xem, chỉnh prompt/tạo lại hoặc tải về chỉnh thủ công, lưu bản hoàn thiện vào thư viện và tải file.
+- **Mục tiêu**:
+  1. Cho phép **Designer** sử dụng AI tạo bản nháp ban đầu:
+     - **Dựng nháp phối cảnh 3D** màn hình LED trực tiếp lên ảnh hiện trạng thực tế công trình của khách hàng.
+     - **Tạo hình ảnh & Banner** đúng kích thước, độ phân giải và tỷ lệ khung màn hình LED.
+  2. Quản lý **Thư viện ấn phẩm**: Lưu trữ các phiên bản nháp do AI sinh ra và các bản thiết kế hoàn thiện sau khi Designer chỉnh sửa.
+  3. Cho phép tải file thiết kế độ phân giải cao để bàn giao cho bộ phận Kinh doanh gửi khách hàng.
+  4. Đo lường và kiểm soát: Ghi nhận thời gian xử lý và chi phí token AI tiêu thụ cho từng yêu cầu.
+- **Nguyên tắc bất biến**: Kết quả do AI tạo ra là **bản nháp ban đầu** để Designer chỉnh sửa hoàn thiện, giúp rút ngắn thời gian dựng bản đầu. AI không thay thế con người; mọi bản vẽ gửi khách hàng đều do Designer phê duyệt và hoàn thiện.
+- **Tác nhân**:
+  + **Tác nhân chính**: Designer.
+  + **Tác nhân phụ**: Hệ thống AI (Generative AI Image Service), Hệ thống CRM.
 
-UC06 yêu cầu lưu đầu vào cùng ấn phẩm, thời gian xử lý và token/chi phí theo lượt. Hình sequence còn có kiểm tra hạn mức người dùng/dự án; giá trị/quy tắc quota chưa chốt, không tự áp số cố định. Prompt thiếu, ảnh không hợp lệ, provider lỗi/quá thời gian hoặc download lỗi phải được thông báo đúng; không lưu nháp giả hay đánh completed khi thất bại.
+---
 
-BPMN thể hiện Sales tạo ticket từ Lead, gửi Designer và nhận kết quả; UC06 lại mô tả Designer tự tạo. Đây là hai entry point cần thống nhất tại Q14, không tự thêm portal khách hàng hoặc cấp Sales quyền gọi AI thiết kế. Lane khách hàng trong BPMN là trao đổi bên ngoài ứng dụng.
+## 3. Dòng sự kiện chính (Main Flow)
 
-Video ngắn có trong roadmap/BFD/enum ERD nhưng chưa có UC06 chi tiết; coi là hướng nghiên cứu/phạm vi cần giao riêng, không cam kết render MP4 hoặc file mô hình 3D chỉnh sửa được. Preview phối cảnh là sản phẩm hình ảnh theo đặc tả hiện có.
+### 3.1. Dựng nháp phối cảnh 3D màn hình LED bằng AI
+1. Designer truy cập phân hệ **"Hỗ trợ thiết kế & phối cảnh AI"**.
+2. Chọn chức năng **"Dựng nháp phối cảnh 3D bằng AI"**.
+3. **Nạp dữ liệu đầu vào**:
+   - Chọn ảnh hiện trạng công trình thực tế (tải lên từ máy hoặc chọn ảnh hiện trường đính kèm từ Lead của UC01).
+   - Chọn kiểu dáng, chủng loại màn hình LED (màn hình LED cong, phẳng, trong nhà, ngoài trời, module P2, P3, P4...).
+   - Cấu hình kích thước (chiều dài, chiều cao) và khoanh vùng vị trí lắp đặt màn hình trên ảnh hiện trạng.
+   - Nhập **Prompt** mô tả yêu cầu bối cảnh, ánh sáng, góc nhìn.
+4. Hệ thống kiểm tra hợp lệ dữ liệu và gửi yêu cầu sang Hệ thống AI.
+5. Hệ thống AI xử lý phối ghép, render màn hình LED 3D chân thực vào đúng vị trí trên ảnh công trình và trả kết quả về.
+6. Hệ thống hiển thị bản nháp cho Designer xem trước, tự động lưu vào **Thư viện ấn phẩm** và ghi nhận thời gian xử lý + lượng token AI tiêu thụ.
+7. Designer đánh giá bản nháp:
+   - Nếu đạt $\rightarrow$ Tải về máy hoặc phê duyệt bản thiết kế.
+   - Nếu chưa đạt $\rightarrow$ Chỉnh sửa Prompt / tham số để AI dựng lại, hoặc tải ảnh nháp về để tự xử lý thủ công bằng Photoshop/Illustrator.
 
-## Quyền và danh mục
+---
 
-Giữ matrix BA: Designer và Admin được dùng AI thiết kế; các vai trò khác không tự có quyền này. Quyền xem file/Lead theo hàng tương ứng và chú thích Designer 3D/2D; không tự thu hẹp/thêm điều kiện ngoài BA.
+### 3.2. Tạo hình ảnh & Banner bằng AI (Luồng phụ 2a)
+1. Designer chọn **"Tạo hình ảnh & Banner bằng AI"**.
+2. Thiết lập kích thước (pixel), tỷ lệ khung hình màn hình LED cần hiển thị (ví dụ 16:9, banner dọc, màn hình siêu dài P10).
+3. Nhập Prompt mô tả nội dung banner, thông điệp truyền thông, màu sắc chủ đạo.
+4. Hệ thống AI sinh hình ảnh banner độ nét cao đúng tỷ lệ khung hình.
+5. Hệ thống hiển thị bản xem trước, lưu vào Thư viện ấn phẩm và ghi nhận chi phí token AI.
 
-Danh mục LED dùng chung M01; khảo sát đúng hình dạng và cách ghép thực tế. Không đóng cứng vài preset thay cho danh mục. Dữ liệu khách không được gửi AI theo ghi chú DFD; chỉ ảnh/tham số/prompt cần cho tác vụ sau khi xử lý thông tin nhận dạng, không gửi raw Lead/contact hoặc ảnh có PII chưa xử lý.
+---
 
-## Dữ liệu, file và public contract
+### 3.3. Quản lý Thư viện ấn phẩm, Phiên bản & Bàn giao (Luồng phụ 10a, 11a)
+1. Designer truy cập **Thư viện ấn phẩm** để quản lý các mẫu thiết kế theo từng dự án/Lead hoặc ấn phẩm Banner độc lập:
+   - **Liên kết Lead theo luồng**: Luồng tạo **Hình ảnh & Banner (3.2 / 2a)** cho phép tạo độc lập theo kích thước pixel/tỷ lệ khung hình màn hình LED mà không bắt buộc gắn Lead (`lead_id` tùy chọn). Đối với luồng **Dựng nháp phối cảnh 3D (3.1)** và điểm khởi tạo ticket giữa Sales/Designer, yêu cầu bắt buộc gắn Lead được theo dõi riêng tại [Q14](../decisions/OPEN_QUESTIONS.md#q14).
+2. Mỗi lần AI sinh bản nháp hoặc Designer tải bản chỉnh sửa hoàn thiện từ bên ngoài (Photoshop/Corel/3DsMax) lên hệ thống được lưu thành một phiên bản riêng trong bảng `design_asset_versions` (`version_number` tăng dần duy nhất theo từng `design_request_id`, liên kết 1-1 với lượt gọi `ai_usage_logs` nếu do AI tạo), đồng thời cập nhật `approved_version_id` và các cột tương thích ERD (`ai_draft_image_url`, `final_render_url`) trên `design_requests`.
+3. Xuất file gốc chất lượng cao (JPG/PNG) qua endpoint kiểm tra quyền `AI_DESIGN` / `ATTACHMENT_UPLOAD_VIEW` (không phơi bày URL storage công khai) để bàn giao cho NVKD đính kèm vào báo giá gửi khách hàng.
 
-ERD có design_requests với Lead, Sales yêu cầu, Designer, loại yêu cầu, thông số, trạng thái, link nháp/hoàn thiện và thời gian. Chưa đủ thư viện/phiên bản/prompt/usage/quota theo UC06. lead_id và các actor đang NN, cần chốt trường hợp banner độc lập.
+---
 
-M05 đọc dữ liệu Lead/tệp được phép qua M01 public contract, quản lý yêu cầu/asset của mình; màn hình Lead lấy kết quả qua composition/public read. M04 đọc thống kê M05 khi giai đoạn 2. Không import service/repository qua lại tạo vòng.
+## 4. Xử lý ngoại lệ & Giới hạn kỹ thuật
 
-Tác vụ dài dùng worker cùng codebase khi được triển khai; status/asset lưu bền để reload vẫn còn. Provider credential chỉ server-side. File dùng private storage, quyền tải thống nhất; lưu hoàn thiện không đồng nghĩa chỉ sửa một URL tạm do provider trả.
-
-## Tiêu chí nghiệm thu khi triển khai
-
-- Đúng quyền BA; prompt/ảnh/tham số không hợp lệ không gọi provider.
-- Lỗi/timeout/quota được chốt xử lý đúng, không completed giả; request lặp không gây tác vụ tính phí ngoài dự kiến.
-- Nháp/hoàn thiện/thư viện/version/download và dữ liệu đầu vào được lưu theo use case đã chốt; refresh không mất lịch sử.
-- Token/chi phí/thời gian thực dùng cho M04; không có dữ liệu thì báo thiếu nguồn, không tự tính bịa.
-- Không gửi thông tin khách sang AI; UI dùng tiếng Việt, không hiện .env/API key/tên model.
-
-## Điểm còn mở
-
-Q06/Q10/Q13/Q14/Q15: file, video, thư viện/model, entry point/ticket/Lead, quota và metric AI. Giai đoạn 2 không có nghĩa đã được triển khai.
+- **3a. Ảnh hiện trạng không hợp lệ**: File tải lên không đúng định dạng (chỉ nhận PNG, JPG, WebP) hoặc dung lượng vượt quá giới hạn $\rightarrow$ Thông báo yêu cầu tải lại ảnh rõ nét.
+- **6a. Prompt thiếu thông tin**: Prompt để trống hoặc thiếu kích thước màn hình $\rightarrow$ Yêu cầu nhập đầy đủ trước khi kích hoạt gọi AI.
+- **8a. AI lỗi hoặc quá thời gian (Timeout)**: Hệ thống AI bên thứ ba bị gián đoạn $\rightarrow$ Báo lỗi cụ thể, không tính phí token ảo, cho phép Designer gửi lại yêu cầu hoặc chuyển sang dựng thủ công.
+- **Bảo mật thông tin khách hàng**: Tuân thủ tuyệt đối quy tắc BA: **Không bao giờ gửi số điện thoại, email hoặc tên công ty/thông tin liên hệ của khách hàng vào prompt hoặc payload gửi sang AI bên thứ 3**.

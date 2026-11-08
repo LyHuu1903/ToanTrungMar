@@ -1,38 +1,26 @@
-# Đối chiếu ERD với DFD và use case BA
+# Đối chiếu ERD gốc với DFD, Use Case BA và Schema thực thi
 
-Trạng thái: phân tích bàn giao; không có schema/migration mới. Nguồn là [ERD PDF](../sources/assets/ba-erd.pdf), [DFD](../sources/assets/ba-dfd-level1.png) và UC01/02/04/06 trong tài liệu BA đọc ngày 05/11/2026.
+Trạng thái: Đã giữ nguyên tài liệu ERD gốc (9 bảng tại [DATA_DICTIONARY.md](DATA_DICTIONARY.md)) và hoàn thiện thiết kế schema dùng chung cho 5 module tại `packages/database/prisma/models/`, phân biệt rõ: (1) Yêu cầu BA đã duyệt, (2) Quyết định triển khai kỹ thuật bảo toàn dữ liệu, và (3) Quyết định nghiệp vụ còn mở ([OPEN_QUESTIONS](../decisions/OPEN_QUESTIONS.md)).
 
-## Kho dữ liệu DFD
+## 1. Kho dữ liệu DFD đối chiếu với ERD gốc và Schema hiện tại
 
-| Kho | Nội dung | ERD đã thể hiện | Chưa thể hiện đủ |
+| Kho | Nội dung | ERD gốc (9 bảng) | Khoảng trống trong ERD gốc | Giải pháp trong Schema dùng chung (`packages/database`) |
+| --- | --- | --- | --- | --- |
+| **D1** | Lead và Pipeline | `leads`, `products`, `lead_products`, `lead_attachments`, `lead_activities` | Chi tiết UC01 mới (cảnh báo dò giá, tiếp nhận, Spam 2 bước, nguồn tự khai, mốc báo giá/phản hồi, actor hệ thống) | Mở rộng `leads`, `lead_activities` và thêm bảng `price_check_alerts` (`01-leads.prisma`) |
+| **D2** | Người dùng/phân quyền | `users`, `roles` | Công tắc Đang nhận lead, trạng thái online, phiên đăng nhập, thông báo, audit | `users` (`is_receiving_leads`, `is_online`), `user_sessions`, `notifications`, `branding_assets`, `system_settings`, `audit_logs` (`core.prisma`) |
+| **D3** | Nguồn/chiến dịch/chi phí | `marketing_tracking` | Danh mục chiến dịch, metric ngày theo tài khoản/grain/từ khóa/trang, lịch đồng bộ, đối soát Google Form, log lỗi webhook E1 | Mở rộng `marketing_tracking` và thêm `campaigns`, `platform_daily_metrics`, `platform_sync_logs`, `lead_reconciliations`, `webhook_intake_error_logs` (`02-tracking-sync.prisma`) |
+| **D4** | Bài viết và từ khóa | Chưa có bảng riêng | Từ khóa mục tiêu, bài viết SEO, lịch sử phiên bản nháp/biên tập, duyệt đăng & lên lịch (DFD 5.0 / UC05) | Thêm `seo_keywords` (cache dẫn xuất từ `platform_daily_metrics`), `seo_articles`, `seo_article_revisions` (`03-keywords-ads.prisma`) |
+| **D5** | Nhật ký dùng AI | Chưa có bảng riêng | Ghi nhận từng lượt gọi AI (M03 & M05), thời gian đo thực tế, token/chi phí (nullable khi lỗi), chống lặp callback | Thêm bảng dùng chung `ai_usage_logs` trong `core.prisma` với contract ghi duy nhất `recordAiUsageAttempt` |
+| **D6** | Thiết kế — giai đoạn 2 | `design_requests` | Thư viện nhiều phiên bản nháp AI / bản hoàn thiện Designer, kích thước banner độc lập không bắt buộc gắn Lead | Mở rộng `design_requests` (`lead_id` nullable, `approved_version_id`, `total_cost_micros`) và thêm `design_asset_versions` (`05-ai-design.prisma`) |
+
+## 2. Phân tách Yêu cầu BA đã duyệt, Giải pháp kỹ thuật và Quyết định còn mở
+
+| Chủ đề | Yêu cầu BA đã duyệt | Giải pháp kỹ thuật trong Schema | Quyết định nghiệp vụ còn mở (Không tự đóng) |
 | --- | --- | --- | --- |
-| D1 | Lead và Pipeline | leads, products, lead_products, lead_attachments, lead_activities | Chi tiết UC01 mới, phản hồi báo giá/mốc nhắc |
-| D2 | Người dùng/phân quyền | users, roles | Công tắc Đang nhận lead, online/tải việc; cơ chế phiên khi chọn thiết kế |
-| D3 | Nguồn/chiến dịch/chi phí | marketing_tracking gắn Lead, UTM/campaign/landing/device/IP/location/sync status | Metric Ads/GA4/Search Console, cost, account/date/grain và lịch đồng bộ/checkpoint |
-| D4 | Bài viết và từ khóa | Chưa có bảng riêng | Bài/outline/keyword/duyệt bài/nguồn bài cũ |
-| D5 | Nhật ký dùng AI | Chưa có bảng riêng | Từng lượt, thời gian, token/chi phí, module/user/task và trạng thái |
-| D6 | Thiết kế — giai đoạn 2 | design_requests | Thư viện/phiên bản/prompt/thông số cụ thể/thời gian/token và quan hệ tác vụ theo UC06 |
-
-Không cần một bảng cho đúng một kho DFD; các ô “chưa thể hiện” là nhu cầu thiết kế, chưa phải danh sách cột cần tự tạo.
-
-## Chi tiết use case cần đối chiếu trước khi code
-
-| BA mô tả | ERD hiện tại | Việc cần chốt |
-| --- | --- | --- |
-| Xác nhận tiếp nhận, người/thời điểm | leads chỉ có assigned_sales_id và timestamps chung | Phân biệt phân công với xác nhận tiếp nhận |
-| Tên dự án, Spam, SĐT chưa chuẩn hóa | Chưa thấy trường tương ứng trong leads | Cách lưu các khái niệm riêng, không thêm vào Pipeline enum tùy tiện |
-| Tự giao khi online/đủ tải/Đang nhận lead | users chỉ có is_active; DFD ghi công tắc tại D2 | Presence, tải việc, nhận Lead và account active là khái niệm khác nhau |
-| Lịch sử tạo/sửa/tệp/Spam/tiếp nhận | lead_activities action_type hiện chỉ reassign_sales/status_change/add_note | Cách ghi lịch sử đủ hành vi, giá trị cũ/mới và actor |
-| Nguồn Webhook/Hotline/Zalo | contact_channel đang hotline/form_web/email/fanpage | Phân biệt kênh liên hệ với nguồn/campaign, mapping Zalo/Webhook |
-| Website tối thiểu SĐT+email, nhập tay bổ sung sau | ERD có NN ở contact_name/phone/area_type/province/created_by_user_id... | Field matrix theo từng luồng; actor của Lead tự động; không điền dữ liệu giả cho đủ NN |
-| Trùng khi khớp SĐT/email/công ty/dự án, không gộp | is_duplicate_alert có; chưa có project_name | Thuật toán/mức chuẩn hóa và cách liên kết cảnh báo |
-| Báo giá chưa phản hồi và cảnh báo quá 7 ngày | Pipeline có quote_sent; lịch sử có created_at | Mốc tính ngày, tín hiệu phản hồi và cách chống nhắc lặp |
-| Chỉ Ads sửa Nguồn/Chiến dịch UC03-4 | marketing_tracking có 2 trường; chưa có rule/history chỉnh nguồn riêng | Contract/validation/history UC03-4 |
-| Banner có thể không gắn Lead trong UC06 | design_requests.lead_id đang NN | Phạm vi banner/ấn phẩm độc lập và Sales ticket so với Designer tự tạo |
-| Token/chi phí/hạn mức theo người/dự án trong hình UC06 | ERD design_requests không có dữ liệu usage/limit | Model dùng chung D5, cấu hình quota và source cost thực |
-
-## Quan hệ và ràng buộc
-
-PDF thể hiện users → roles; Lead có Sales phụ trách tùy chọn; Lead liên kết nhiều activity/product/attachment/design request; marketing_tracking một-một với Lead. Các trường created_by_user_id/uploaded_by/action_by/from_sales_id/to_sales_id/requested_by_sales_id/assigned_designer_id cần đối chiếu FK đầy đủ trong DBML khi triển khai vì ảnh không vẽ hết.
-
-Không tự thêm cascade/delete/unique, không chọn cỡ ID hoặc thuật toán index từ ảnh. Không dùng updated_at chung làm mốc báo giá khi chưa chốt nghiệp vụ. Kiểm tra trên schema thật đúng provider/major trong task DB riêng.
+| **Tiếp nhận Lead theo kênh & Actor** | Website tối thiểu `SĐT + Email` (UC01 3.1.1); nhập tay có thể bổ sung sau; không tạo user Admin giả cho webhook | Cho phép `contact_name`, `area_type`, `province`, `created_by_user_id` nullable ở DB; thêm `created_by_actor_type` (`USER`/`WEBHOOK`/`SYSTEM`) và `created_by_actor_ref`. Giữ `phone` **không unique** để khách liên hệ lại tạo được nhiều Lead hợp lệ | [Q05](../decisions/OPEN_QUESTIONS.md#q05): Ma trận trường bắt buộc chi tiết cho từng kênh ở tầng form/API validation |
+| **Sửa Nguồn/Chiến dịch & Ẩn danh Lead** | Marketing/Ads xem Lead ẩn danh (UC01); UC01/UC03-4 nêu Ads sửa Nguồn/Chiến dịch nhưng UC03 BR5 ghi cấm sửa tay | Hỗ trợ lưu cả nguồn tự động (`marketing_tracking`) và lịch sử hoạt động (`lead_activities`), nhưng **không tự mở quyền sửa tay hay tự chốt danh sách cột ẩn danh** | [Q02](../decisions/OPEN_QUESTIONS.md#q02), [Q03](../decisions/OPEN_QUESTIONS.md#q03): BA chốt sự khác biệt giữa UC03-4 và UC03 BR5; chốt whitelist cột ẩn danh |
+| **Giá trị báo giá, Hợp đồng & Chi phí** | Không hiển thị giá bán sản phẩm trên danh mục CRM; UC03/UC04 có công thức CPL/ROAS và chi phí Ads/AI | Giữ `quote_value`, `deal_value` kiểu `BigInt?` (VND nguyên) dưới DB nhưng **không tự đưa lên UI**. Chi phí Ads/CPC/ngân sách và chi phí AI lưu bằng `BigInt` **micros** (`10^-6`) kèm `currency_code` để không mất phần thập phân | [Q08](../decisions/OPEN_QUESTIONS.md#q08): Phạm vi hiển thị doanh thu/ROAS và luồng duyệt ngân sách trên UI |
+| **Chống trùng Webhook & Độ duy nhất Metric** | Không mất Lead khi gửi lặp webhook; đồng bộ đa nền tảng (Google Ads, GA4, GSC, Fanpage, Trends) | Khóa duy nhất webhook theo `(intake_source_provider, intake_source_account_key, external_submission_id)`. Khóa duy nhất metric theo `(platform, account_property_id, metric_date, grain, campaign_external_id, keyword_match_type, keyword_text_norm, page_path_norm)` | [Q12](../decisions/OPEN_QUESTIONS.md#q12): Danh sách đầy đủ URL website thứ 3 và cơ chế ký xác thực webhook thực tế |
+| **Liên kết Lead trong Thiết kế AI (UC06)** | Luồng 2a cho phép Designer tạo Banner độc lập theo pixel/tỷ lệ khung hình; Luồng 3.1 dựng phối cảnh 3D trên ảnh công trình | Cho phép `design_requests.lead_id` và `requested_by_sales_id` nullable ở DB để hỗ trợ Banner độc lập; thêm `design_asset_versions` có `@@unique([design_request_id, version_number])` và `approved_version_id` | [Q14](../decisions/OPEN_QUESTIONS.md#q14): Quy tắc bắt buộc gắn Lead đối với riêng luồng phối cảnh 3D và điểm khởi tạo ticket giữa Sales/Designer |
+| **Nhật ký AI & Hạn mức (D5)** | Ghi nhận thời gian xử lý và token/chi phí AI cho M03 (UC05) và M05 (UC06); lỗi/timeout không tính phí ảo | `ai_usage_logs` đặt tại `core.prisma`; `prompt_tokens`, `completion_tokens`, `total_tokens`, `cost_micros` nullable khi chưa rõ/lỗi; luôn đo `duration_ms`; chống lặp callback bằng `idempotency_key @unique` và tách biệt lần thử lại qua `attempt_number` | [Q15](../decisions/OPEN_QUESTIONS.md#q15): Ngưỡng quota token/chi phí theo người dùng hoặc dự án |
+| **Cấu hình ngưỡng hệ thống** | BA xác nhận: cảnh báo báo giá quá `7` ngày (DFD 4.2), tra lại `gclid` trong `7` ngày (UC03 A2), lệch đối soát `>= 2` Lead (UC03 Luồng D), lỗi đồng bộ `3` lần liên tiếp (UC03 E2), rà soát bài SEO sau `30` ngày (UC05) | Chỉ giữ các ngưỡng BA đã xác nhận trong `system_settings` (`seed.js`); đã gỡ bỏ toàn bộ các khóa SLA giả định chưa được BA duyệt (`slaRemindReceiveMinutes`, `slaAutoReassignMinutes`, v.v.) | [Q07](../decisions/OPEN_QUESTIONS.md#q07), [Q09](../decisions/OPEN_QUESTIONS.md#q09): Con số phút nhắc tiếp nhận, số lần tự chuyển tối đa $N$, quy tắc giờ làm việc và ngày lịch/ngày làm việc |

@@ -13,6 +13,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate --schema=prisma",
+    "db:migrate:deploy": "node scripts/migrate-deploy.js",
     "db:push": "prisma db push --schema=prisma",
     "db:seed": "node scripts/seed.js"
   }

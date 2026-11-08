@@ -1,51 +1,83 @@
-# 03-keywords-ads — Ads, từ khóa và SEO
+# 03-keywords-ads — Từ khóa, Ads và Nội dung SEO tích hợp AI
 
-**Nhóm 3 — phụ trách: Nguyễn Anh Quân.** Branch: `feature/ads-keywords`. Trạng thái: **CHƯA TRIỂN KHAI trong gói tài liệu**. Nguồn nghiệp vụ: [BA](../sources/README.md#s04), [ma trận quyền](../PERMISSIONS.md); mục bên dưới tóm tắt nghiệp vụ, không thay nguồn BA.
+**Nhóm 3 — Phụ trách: Nguyễn Anh Quân.**  
+Nhánh Git: `feature/ads-keywords`.  
+Nguồn đặc tả chuẩn: **Tài liệu đặc tả BA (UC05: Nội dung SEO tích hợp AI)** ngày 05/11/2026.
 
-## Vùng phát triển của nhóm
+---
 
-| Lớp | Đường dẫn |
-| --- | --- |
-| FE | apps/web/src/modules/03-keywords-ads/ |
-| FE route | apps/web/src/app/(workspace)/ads/ |
-| BE | apps/api/src/modules/03-keywords-ads/ |
-| API route | apps/api/src/app/api/v1/ads/ |
-| Contracts | packages/contracts/src/03-keywords-ads/ |
-| Model tương lai | packages/database/prisma/models/03-keywords-ads.prisma — chưa tạo |
-| E2E/fixture | tests/e2e/03-keywords-ads/ và tests/fixtures/03-keywords-ads/ |
+## 1. Vùng phát triển của Nhóm 3
 
-Các file chung và nguyên tắc public interface xem [MODULE_MAP](../MODULE_MAP.md), [ARCHITECTURE](../ARCHITECTURE.md), [API_CONTRACTS](../API_CONTRACTS.md). Tham chiếu Qxx trong hồ sơ này nằm ở [OPEN_QUESTIONS](../decisions/OPEN_QUESTIONS.md).
+| Lớp | Đường dẫn mã nguồn |
+| :--- | :--- |
+| **Giao diện (Frontend)** | `apps/web/src/modules/03-keywords-ads/` |
+| **Trang hiển thị (Page Route)** | `apps/web/src/app/(workspace)/ads/page.tsx` |
+| **Xử lý Backend** | `apps/api/src/modules/03-keywords-ads/` |
+| **Endpoint API** | `apps/api/src/app/api/v1/ads/route.ts` |
+| **Hợp đồng dữ liệu (Contracts/DTO)** | `packages/contracts/src/03-keywords-ads/` |
+| **Prisma Model** | `packages/database/prisma/models/03-keywords-ads.prisma` |
+| **Kiểm thử E2E & Mock Fixture** | `tests/e2e/03-keywords-ads/` và `tests/fixtures/03-keywords-ads/` |
+| **Task nhóm** | `docs/tasks/m03/` |
 
+---
 
-## Nghiệp vụ theo BFD, bảng nhóm và roadmap
+## 2. Mô tả tổng quan Use Case 05 (UC05)
 
-Phân tích Campaign/Keyword, CPC, click, impression, CTR, chi phí và conversion; đối chiếu Lead/kết quả Sales; gợi ý từ khóa theo Google Ads/Search Console/Google Trends. Hỗ trợ theo dõi CPC/ngân sách và chủ đề Content SEO. Chưa giao tự cập nhật chiến dịch/ngân sách trên tài khoản Ads thật.
+- **Mục tiêu**:
+  1. Cho phép nhân viên Marketing chọn từ khóa dựa trên dữ liệu hiệu quả và xu hướng tìm kiếm.
+  2. Sử dụng AI để soạn bản nháp bài viết chuẩn SEO theo từ khóa và chủ đề đã chọn.
+  3. Quản lý quy trình biên tập: Chỉnh sửa $\rightarrow$ Duyệt $\rightarrow$ Lên lịch $\rightarrow$ Tự động đăng tải lên 3 website Toàn Trung.
+  4. Theo dõi hiệu quả bài viết sau khi đăng (lượt xem, thứ hạng, click) để tối ưu và làm mới bài viết cũ.
+- **Vai trò & Tác nhân**:
+  + **Tác nhân chính**: Nhân viên Marketing (toàn quyền chọn từ khóa, tạo nháp AI, sửa bài, duyệt, rút duyệt, đặt lịch đăng bài).
+  + **Tác nhân phụ**:
+    * **Nhân viên Ads**: Chỉ được xem danh sách từ khóa và xu hướng tìm kiếm để hỗ trợ Marketing; **không có quyền** tạo nháp AI, sửa bài, duyệt hoặc lên lịch đăng bài.
+    * **Hệ thống AI**: Đóng vai trò trợ lý đề xuất bản nháp; mọi quyết định nội dung cuối cùng thuộc về Marketing.
+    * **3 Website Toàn Trung**: Tiếp nhận bài viết tự động qua kết nối API.
 
-DFD 5.0 có nội dung SEO tích hợp AI: bài cũ từ website, yêu cầu đề tài/duyệt bài từ Marketing, số liệu keyword/traffic, gợi ý đề tài/outline/bản nháp, D4 bài viết/từ khóa và D5 nhật ký AI. Đề xuất giao phần này cho M03 để khớp BFD/tên module; không đưa vào M05 chỉ vì DFD đánh số 5.0. Tab M03 hiện chưa có use case chi tiết.
+---
 
-Roadmap M03 thuộc giai đoạn 2; DFD 5.0 chưa đánh mốc riêng. Chốt lịch nhiệm vụ SEO tại Q10, chưa tự coi màu xanh là giai đoạn 1. Video/banner thuộc M05 theo task riêng.
+## 3. Dòng sự kiện chính (Main Flow)
 
-## Quyền, dữ liệu và AI
+1. **Theo dõi từ khóa & Phân tích xu hướng**:
+   - Marketing mở màn hình phân tích từ khóa.
+   - Hệ thống hiển thị dữ liệu đồng bộ từ UC03: Từ khóa & lượt click (Google Ads); Từ khóa, lượt click & vị trí (Search Console); Xu hướng tìm kiếm (Google Trends).
+2. **Chọn từ khóa & Khởi tạo yêu cầu**:
+   - Marketing chọn từ khóa mục tiêu và chủ đề bài viết cần viết.
+   - Nhập yêu cầu hoặc bấm "Soạn bản nháp bài viết chuẩn SEO bằng AI".
+3. **AI sinh bản nháp ban đầu**:
+   - Hệ thống gửi prompt và từ khóa sang hệ thống AI.
+   - AI trả về bản nháp bài viết (gồm tiêu đề chuẩn SEO, thẻ meta description, các thẻ H2/H3, nội dung thân bài và mật độ từ khóa gợi ý).
+   - Hệ thống lưu bài viết ở trạng thái **`Nháp`** cùng với nội dung đề xuất của AI.
+4. **Biên tập & Chỉnh sửa nội dung**:
+   - Nhân viên Marketing trực tiếp chỉnh sửa câu từ, chèn hình ảnh sản phẩm màn hình LED thực tế.
+   - Hệ thống lưu lịch sử các phiên bản chỉnh sửa; trạng thái bài viết vẫn là **`Nháp`**.
+5. **Đề xuất lịch đăng & Chọn website đích**:
+   - Hệ thống phân tích xu hướng tìm kiếm để gợi ý ngày/giờ đăng bài tối ưu.
+   - Marketing chọn hoặc điều chỉnh ngày giờ đăng bài và chọn website đích trong số 3 website của công ty.
+6. **Duyệt bài viết (Approval)**:
+   - Marketing bấm "Duyệt bài".
+   - Hệ thống chuyển trạng thái bài viết từ **`Nháp`** $\longrightarrow$ **`Đã duyệt - chờ đăng`**, khóa nội dung chỉnh sửa nhanh và đưa vào hàng đợi lịch phát hành.
+7. **Tự động đăng bài lên Website**:
+   - Đến đúng ngày giờ đã đặt lịch, hệ thống nền tự động đẩy bài viết qua API lên website đích đã chọn.
+   - Đăng tải thành công $\rightarrow$ Chuyển trạng thái sang **`Đã đăng`** kèm đường dẫn (URL) bài viết thực tế.
+8. **Đo lường & Tối ưu bài viết cũ**:
+   - Marketing theo dõi lượt click, thứ hạng tìm kiếm và thời gian đọc trang qua dữ liệu Search Console / GA4 đồng bộ về.
+   - Hệ thống hiển thị danh sách các bài viết cũ có hiệu suất thấp để Marketing rà soát, viết lại hoặc cập nhật từ khóa mới.
 
-Giữ các hàng AI Marketing/Tracking/Lead trong PERMISSIONS. Marketing và Ads đọc Lead ẩn danh theo UC01; M03 chỉ nhận dữ liệu được phép, không cần thông tin định danh khách để phân tích nguồn/hiệu quả. M03 không được đổi Pipeline hoặc nội dung Lead ngoài quyền UC03-4 của Ads được giao cho module liên quan.
+---
 
-DFD cấm SĐT/email/thông tin khách trong payload AI. Provider chỉ server-side; gửi nội dung SEO phù hợp, ghi thời gian/token/chi phí thực theo contract D5 khi được chốt. Không dùng dữ liệu demo hoặc tự bịa từ khóa/chỉ số để báo tích hợp live.
+## 4. Các luồng sự kiện phụ & Xử lý ngoại lệ
 
-ERD chưa có bảng metric Ads/D4/D5. M02 nhập metric qua public contract M03 nếu owner đã thống nhất; M03 đọc chất lượng/trạng thái Lead qua M01 public; M04 đọc số liệu phân tích qua public read. Không import repository nội bộ hoặc tạo vòng M02↔M03.
-
-## Chỉ số và contract cần chốt
-
-Mỗi KPI cần nguồn, account/entity, kỳ ngày, grain, đơn vị/currency, công thức, cách xử lý mẫu số 0 và tiêu chí đối chiếu. Không cộng CTR/CPC/tỷ lệ theo trung bình tùy ý. Chỉ số conversion provider và Lead chốt là hai khái niệm cần định nghĩa riêng.
-
-Hình liên kết/BPMN có doanh thu/ROI/duyệt ngân sách; feedback và ERD chưa đủ cho các mục này. Giữ Q08, chưa tự tính lợi nhuận từ chi phí và số Lead hoặc tạo quy trình duyệt mới.
-
-## Tiêu chí nghiệm thu khi triển khai
-
-- Chỉ số khớp fixture đối soát theo account/ngày/grain/đơn vị và nguồn đã cấu hình.
-- Khuyến nghị có dữ liệu căn cứ và trạng thái nguồn; không tự sửa Ads thật.
-- SEO input/duyệt/lưu phiên bản và lỗi AI có use case được chốt; không có thông tin khách trong provider request.
-- Public read trả dữ liệu đúng scope/ẩn danh; D5 ghi usage có thật, không token/cost giả.
-
-## Điểm còn mở
-
-Q02/Q08/Q10/Q13/Q15: UC SEO/Ads chi tiết, công thức KPI, scope ROI/ngân sách, giai đoạn, model D3/D4/D5 và quota.
+- **A1. Rút duyệt bài viết**:
+  + Áp dụng khi bài viết đang ở trạng thái `Đã duyệt - chờ đăng` nhưng Marketing muốn chỉnh sửa lại hoặc hủy lịch đăng.
+  + Hệ thống chuyển trạng thái về lại `Nháp` và hủy bỏ lịch phát hành đã hẹn giờ.
+- **A2. Lỗi đẩy bài lên website**:
+  + Nếu kết nối website đích bị lỗi hoặc API website từ chối $\rightarrow$ Hệ thống giữ nguyên trạng thái `Đã duyệt - chờ đăng`, ghi nhật ký lỗi chi tiết và gửi thông báo cho Marketing.
+  + Marketing có thể chọn: Thử đăng lại ngay, Đổi sang giờ/ngày khác, hoặc Rút duyệt về `Nháp`.
+- **A3. Sự cố kết nối AI**:
+  + Nếu AI quá tải, lỗi mạng hoặc không phản hồi $\rightarrow$ Hệ thống thông báo lỗi rõ ràng, không tạo bản nháp lỗi.
+  + Marketing có thể chọn thử lại, hoặc tự soạn nội dung thủ công trên giao diện biên tập; hệ thống lưu ở trạng thái `Nháp` để tiếp tục làm việc bình thường.
+- **A4. Giới hạn phân quyền của Nhân viên Ads**:
+  + Nhân viên Ads truy cập chức năng chỉ nhìn thấy bảng dữ liệu số liệu từ khóa và biểu đồ xu hướng.
+  + Không hiển thị các nút thao tác: "Tạo bài viết AI", "Sửa bài", "Duyệt bài", "Lên lịch", "Xem hiệu quả bài viết". Luồng của Ads kết thúc tại bước tra cứu số liệu.

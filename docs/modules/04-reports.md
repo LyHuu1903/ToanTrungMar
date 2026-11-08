@@ -1,51 +1,66 @@
-# 04-reports — Dashboard và báo cáo
+# 04-reports — Báo cáo & Dashboard điều hành
 
-**Nhóm 4 — phụ trách: Nguyễn Hoàng Minh Khôi.** Branch: `feature/reports-dashboard`. Trạng thái: **CHƯA TRIỂN KHAI trong gói tài liệu**. Nguồn nghiệp vụ: [BA](../sources/README.md#s04), [ma trận quyền](../PERMISSIONS.md); mục bên dưới tóm tắt nghiệp vụ, không thay nguồn BA.
+**Nhóm 4 — Phụ trách: Nguyễn Hoàng Minh Khôi.**  
+Nhánh Git: `feature/reports-dashboard`.  
+Nguồn đặc tả chuẩn:
+1. **Tài liệu đặc tả BA (UC04: Xem Dashboard)** ngày 05/11/2026.
+2. **Brief Mini CRM — Yêu cầu Báo cáo thực tế từ Công ty Toàn Trung** ngày 06/11/2026.
 
-## Vùng phát triển của nhóm
+---
 
-| Lớp | Đường dẫn |
-| --- | --- |
-| FE | apps/web/src/modules/04-reports/ |
-| FE route | apps/web/src/app/(workspace)/reports/ |
-| BE | apps/api/src/modules/04-reports/ |
-| API route | apps/api/src/app/api/v1/reports/ |
-| Contracts | packages/contracts/src/04-reports/ |
-| Model tương lai | packages/database/prisma/models/04-reports.prisma — chưa tạo |
-| E2E/fixture | tests/e2e/04-reports/ và tests/fixtures/04-reports/ |
+## 1. Vùng phát triển của Nhóm 4
 
-Các file chung và nguyên tắc public interface xem [MODULE_MAP](../MODULE_MAP.md), [ARCHITECTURE](../ARCHITECTURE.md), [API_CONTRACTS](../API_CONTRACTS.md). Tham chiếu Qxx trong hồ sơ này nằm ở [OPEN_QUESTIONS](../decisions/OPEN_QUESTIONS.md).
+| Lớp | Đường dẫn mã nguồn |
+| :--- | :--- |
+| **Giao diện (Frontend)** | `apps/web/src/modules/04-reports/` |
+| **Trang hiển thị (Page Route)** | `apps/web/src/app/(workspace)/reports/page.tsx` |
+| **Xử lý Backend** | `apps/api/src/modules/04-reports/` |
+| **Endpoint API** | `apps/api/src/app/api/v1/reports/route.ts` |
+| **Hợp đồng dữ liệu (Contracts/DTO)** | `packages/contracts/src/04-reports/` |
+| **Prisma Model** | `packages/database/prisma/models/04-reports.prisma` |
+| **Kiểm thử E2E & Mock Fixture** | `tests/e2e/04-reports/` và `tests/fixtures/04-reports/` |
+| **Task nhóm** | `docs/tasks/m04/` |
 
+---
 
-## UC04 — Dashboard và báo cáo
+## 2. Báo cáo & Dashboard thực tế theo Brief Mini CRM
 
-Dashboard theo vai trò, lấy dữ liệu gốc: Giám đốc tổng quan; Marketing/Ads theo nguồn/sản phẩm/chi phí và hiệu quả; Sales theo cá nhân và khách đã gửi báo giá chưa phản hồi; Designer số ấn phẩm theo loại, thời gian và token/chi phí AI khi giai đoạn thiết kế triển khai.
+Hệ thống tích hợp tự động phân loại Lead trong **1 tuần**, **30 ngày** hoặc **Tùy chỉnh khoảng thời gian**, thiết kế Dashboard và biểu đồ thể hiện các nhóm báo cáo sau:
 
-Lọc 1 tuần, 30 ngày hoặc khoảng tùy chọn. Bộ lọc ngày không hợp lệ phải báo lỗi. Truy vấn thành công không có dữ liệu thì hiển thị 0/trạng thái trống theo UC04; nguồn chưa kết nối/lỗi không được biến thành 0 giả. “Một tuần” lịch hay 7 ngày trượt cần thống nhất trước khi chốt logic ngày.
+### 2.1. Hiệu suất tổng quan (Overview)
+- **Tổng số lượng Lead đổ về** trong tuần/tháng theo từng kênh (Website, Google Ads, Hotline, Zalo).
+- **Phân bổ Lead theo từng Nhân viên Kinh doanh**:
+  + Bảng tổng hợp theo NVKD: Tên Sales, Tổng Lead, Vừa nhận thông tin, Đang soạn báo giá, Đã gửi báo giá, Chốt thành công, Thất bại, Tỷ lệ chốt (%).
+  + Chi tiết: Sales nào nhận khách nào, quan tâm dòng sản phẩm gì, trạng thái tiến độ ra sao.
 
-Thống kê tổng Lead, phân bổ theo Sales, trạng thái, nguồn, sản phẩm nhiều/ít được hỏi; số Lead đã gửi báo giá và chưa phản hồi. Không chỉ tính từ trang danh sách hiện tại. Thống kê thiết kế/AI có nguồn riêng, chưa có thì ghi chưa triển khai.
+### 2.2. Phân tích sản phẩm (Product Insights)
+- Thống kê chi tiết số lượng khách hàng hỏi theo từng dòng sản phẩm cụ thể của công ty Toàn Trung:
+  + **Màn hình LED**: `Indoor`, `Outdoor`, `Cong`, `Lưới`, `GOB`, `COB`, `LCD`.
+  + **Bảng điện tử**: `Bảng năng suất`, `Bảng thi đấu thể thao`, `Đồng hồ LED`, `Bảng an toàn lao động`, `Bảng giá vàng`, `Bảng thu phí giữ xe`...
+  + **Nhu cầu khác**: Sửa chữa, thuê màn hình, sản phẩm đặc biệt.
 
-## Quyền và xuất dữ liệu
+### 2.3. Báo cáo tiến độ tài chính / Báo giá (Sales Pipeline Report)
+- **Số lượng khách hàng đã được gửi báo giá** trong kỳ.
+- **Danh sách khách hàng đã gửi báo giá nhưng chưa phản hồi**:
+  + Danh sách trích xuất chi tiết để NVKD và Trưởng phòng kinh doanh kịp thời bám sát (Follow-up), cảnh báo các trường hợp quá 7 ngày chưa phản hồi.
+- **Báo cáo chi tiết từng Lead (Data Table)**:
+  + Các cột: STT, Kinh doanh phụ trách, Thời gian nhận (Ngày/Giờ cụ thể), Tên khách hàng / Công ty, Số điện thoại, Nguồn Lead, Sản phẩm quan tâm, Trạng thái tiến độ, Ghi chú / Nguyên nhân.
 
-Giữ nguyên matrix BA: đủ 8 vai trò có quyền export Excel/Google Sheets, không thu hẹp chỉ còn Giám đốc do UC04 mô tả luồng chính. Sales Dashboard số liệu cá nhân; trưởng phòng báo cáo theo phòng mình theo yêu cầu người dùng; các quyền Lead toàn công ty không bị đổi.
+### 2.4. Xuất dữ liệu thực tế (Export File)
+- Cho phép trích xuất toàn bộ dữ liệu bảng báo cáo thành **1 file Excel (.xlsx)** hoặc **Google Sheets** phản ánh đúng bộ lọc thời gian và quyền xem của tài khoản.
 
-Export dùng cùng bộ lọc, scope và biểu diễn dữ liệu được xem; không dùng export để lộ Lead định danh cho Marketing/Ads. UC04 lỗi file/Sheets chưa kết nối phải báo đúng và cho thử lại/chọn định dạng khác; không báo thành công nếu chưa tạo/gửi được file.
+---
 
-## Dữ liệu và phụ thuộc
+## 3. Dashboard theo phân hệ từng vai trò
 
-M04 đọc public read từ M01/M02/M03 và M05 ở giai đoạn 2; có thể dùng read model/view được owner chốt khi cần. Không tự ghi bảng Lead/Tracking/Ads hoặc query xuyên bảng tùy tiện. Bảng lưu export/job chỉ tạo nếu có yêu cầu thực, không tạo report table chỉ để đủ nhóm.
+- **Giám đốc (BOD) & Quản trị viên (ADMIN)**: Xem toàn cảnh toàn công ty, biểu đồ phân bổ Lead theo NVKD, cơ cấu doanh số/tỷ lệ chốt, xuất báo cáo tổng hợp.
+- **Marketing & Ads**: Thống kê Lead theo nguồn và chiến dịch quảng cáo; kết hợp chi phí Google Ads/GA4 để đo lường CPL (Chi phí/Lead hiệu quả), theo dõi tỷ lệ chốt Lead từ Ads.
+- **Kinh doanh (SALES)**: Xem hiệu suất cá nhân của chính mình (Lead được giao, tiến độ báo giá, tỷ lệ chốt đơn của bản thân, danh sách khách cần bám sát).
+- **Thiết kế (DESIGNER)**: Thống kê số lượng ấn phẩm hoàn thành (Phối cảnh 3D, Banner), thời gian xử lý và chi phí token AI.
 
-Mỗi KPI cần định nghĩa mẫu số, nguồn dữ liệu, khoảng thời gian/timezone, độ mới và trạng thái lỗi/thiếu nguồn. Giao diện báo cáo đọc toàn trang theo feedback, không nhét báo cáo dài vào ô nhỏ và không đưa giá báo khách/doanh số chưa chốt.
+---
 
-BPMN/sequence có phê duyệt ngân sách, ROI và doanh thu nhưng UC/ERD chưa đủ và feedback đang giới hạn: ghi Q08, chưa tự thêm workflow hay tính tiền giả. Quyền BA hiện có không bị thay đổi bởi việc chờ làm rõ KPI.
-
-## Tiêu chí nghiệm thu khi triển khai
-
-- Dữ liệu khác nhau đúng vai trò, Sales không thấy số liệu Sales khác qua filter/ID/endpoint khác.
-- Ranh giới ngày và bộ lọc được kiểm tra; tập rỗng khác nguồn lỗi; thống kê khớp fixture toàn tập.
-- Export đủ các hàng được phép, cùng scope/ẩn danh/filter; Excel/Sheets lỗi không success giả.
-- Không hiển thị KPI thiết kế/AI hoặc nguồn Google như đã live khi chưa có dữ liệu được xác minh.
-
-## Điểm còn mở
-
-Q03/Q04/Q08/Q09/Q10/Q13/Q15 và định nghĩa tuần/mốc KPI, nguồn Sheets, usage AI. Cần chốt từng KPI trước khi nghiệm thu số liệu.
+## 4. Xử lý ngoại lệ
+- Mẫu số bằng 0 hiển thị `—` (không hiển thị 0 hoặc lỗi chia).
+- Kỳ lọc dưới 30 Lead / 100 click hiển thị ghi chú *"Mẫu nhỏ, chỉ mang tính tham khảo"*.
+- Số liệu của ngày hôm nay ghi chú rõ *"Số liệu hôm nay chưa chốt, sẽ được cập nhật ở các lần đồng bộ sau"*.

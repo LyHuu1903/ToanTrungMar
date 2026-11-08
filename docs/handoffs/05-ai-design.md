@@ -1,23 +1,30 @@
-# Handoff 05-ai-design
+# Handoff 05-ai-design — Hỗ trợ thiết kế & phối cảnh AI (Giai đoạn 2)
 
-Cập nhật: 05/11/2026. Nhóm 5 — Lý Tăng Hữu. Branch dự kiến: `feature/ai-design`. Gói bàn giao chưa khởi tạo Git nên chưa có HEAD.
+Cập nhật: 06/11/2026.  
+Nhóm 5 — Lý Tăng Hữu.  
+Nhánh Git: `feature/ai-design`.  
+Kho mã nguồn GitHub: `https://github.com/truongvanlong1905/ToanTrungMar` (nhánh `main`).
 
-## Hiện trạng
+---
 
-Chỉ có thư mục giữ chỗ FE/BE/contracts/test và tài liệu nghiệp vụ; **chưa có code chức năng, route thực, model/migration hoặc test ứng dụng**. Mẫu task chưa phải nhiệm vụ triển khai. Chưa có account/provider được cấu hình.
+## 1. Hiện trạng & Nguồn nghiệp vụ chuẩn
+- Đã tiếp nhận và phân tích toàn diện **Tài liệu đặc tả BA: UC06 (Hỗ trợ thiết kế & phối cảnh AI)** kèm Sơ đồ hoạt động, Sơ đồ tuần tự và BPMN As-is/To-be.
+- Chi tiết đặc tả nghiệp vụ đầy đủ đã được ghi nhận tại [docs/modules/05-ai-design.md](../modules/05-ai-design.md).
+- Khung thư mục mã nguồn đã sẵn sàng: `apps/web/src/modules/05-ai-design/`, `apps/api/src/modules/05-ai-design/`, `packages/contracts/src/05-ai-design/`.
 
-## Phạm vi và phụ thuộc
+---
 
-UC06, DFD 6.0 là giai đoạn 2. AI tạo bản nháp cho Designer; giữ quyền AI Design chỉ Designer/Admin theo BA.
-
-Đọc dữ liệu cần thiết từ M01 theo public contract có scope, dùng Core private storage/provider/job. Không tạo import M01↔M05.
-
-## Bằng chứng và điểm còn mở
-
-Kiểm tra tài liệu/công cụ chung được ghi tại [báo cáo](../reviews/20261105-handoff-validation.md). Nghiệp vụ/API/E2E/DB/provider của module: NOT_RUN. Không suy rằng các chức năng đã hoàn thành.
-
-Chốt ticket thiết kế/model, giới hạn đầu vào và khả năng provider; chưa hứa video/MP4 hoặc mô hình 3D chỉnh sửa được.
-
-## Việc tiếp theo
-
-Nhận task cụ thể; tạo task từ [mẫu](../tasks/m05/TASK.example.json). Đọc mục liên quan trong [hồ sơ module](../modules/05-ai-design.md), tìm source/caller nếu đã có code mới. Sau task cập nhật trạng thái, file/contract đã đổi, lệnh/kết quả và blocker ngay trong bản này; giữ ngắn, không chép toàn bộ BA.
+## 2. Các nghiệp vụ trọng tâm đã chốt
+1. **Dựng nháp phối cảnh 3D màn hình LED bằng AI**:
+   - Đầu vào: Ảnh hiện trạng công trình thực tế (từ máy hoặc đính kèm từ Lead UC01) + Chủng loại/kiểu dáng LED + Kích thước/vị trí trên ảnh + Prompt mô tả.
+   - AI render màn hình LED 3D chân thực lên ảnh hiện trạng. Lưu vào Thư viện ấn phẩm, ghi nhận thời gian và chi phí token AI.
+2. **Tạo hình ảnh & Banner bằng AI**:
+   - Thiết lập kích thước pixel, tỷ lệ khung hình màn hình LED cần hiển thị.
+   - AI sinh ảnh banner độ nét cao đúng tỷ lệ khung hình.
+3. **Quản lý Thư viện ấn phẩm & Hoàn thiện**:
+   - Lưu trữ bản nháp AI (`ai_draft_image_url`) và bản hoàn thiện sau khi Designer chỉnh sửa qua Photoshop/3DsMax (`final_render_url`).
+   - Tải file độ phân giải cao bàn giao cho bộ phận Kinh doanh đính kèm báo giá.
+4. **Bảo mật & Database Model (Đã hoàn thiện tại `packages/database/prisma/models/05-ai-design.prisma`)**:
+   - Tuyệt đối không gửi thông tin cá nhân khách hàng (SĐT, email, tên công ty) sang AI bên thứ 3.
+   - Gồm 2 bảng thuộc Nhóm 5: `design_requests` (hỗ trợ `lead_id` tùy chọn cho Banner độc lập, `version`, `approved_version_id`, `total_cost_micros BigInt?`) và `design_asset_versions` (`@@unique([design_request_id, version_number])`, lưu đầy đủ từng phiên bản nháp AI và bản hoàn thiện Designer).
+   - Nhật ký từng lượt gọi AI (kể cả lỗi/timeout) dùng bảng chung `ai_usage_logs` tại `core.prisma` thông qua contract `recordAiUsageAttempt`. Quy tắc bắt buộc gắn Lead cho riêng phối cảnh 3D và điểm tạo ticket theo dõi tại [Q14](../decisions/OPEN_QUESTIONS.md#q14).

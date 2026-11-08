@@ -1,9 +1,11 @@
-# Frontend Toàn Trung
+# Frontend Toàn Trung (`apps/web`)
 
-Workspace đích apps/web; chưa có ứng dụng Next.js hoặc dependency được tạo trong gói này. Xem [kiến trúc](../../docs/ARCHITECTURE.md), [quyền BA](../../docs/PERMISSIONS.md), [UI](../../docs/UI_GUIDELINES.md).
+Next.js 14 App Router + React + Tailwind. Chạy cùng API bằng `npm run dev` tại thư mục gốc.
 
-src/app/ chứa login và route/layout mỏng; src/modules/ chứa 5 module; src/core/ chứa UI/layout/HTTP/session dùng chung. Mỗi nhóm sở hữu module và route tương ứng theo [MODULE_MAP](../../docs/MODULE_MAP.md).
+- `src/app/(auth)/login` — trang đăng nhập (Core).
+- `src/app/(workspace)/` — các trang sau đăng nhập. Core: `dashboard`, `notifications`, `profile`, `admin`, `settings`. 5 nhóm: `leads`, `tracking`, `ads`, `reports`, `design`.
+- `src/core/` — layout, session, HTTP client dùng chung (Core, không tự sửa).
+- `src/modules/<module>/` — giao diện của từng nhóm theo [MODULE_MAP](../../docs/MODULE_MAP.md).
+- `src/app/api/` — chỉ re-export route handler từ `apps/api`.
 
-FE chỉ gọi HTTP bằng DTO contracts. Không import DB, Prisma, secret hoặc API internals. Menu/Dashboard theo quyền BA, direct URL vẫn phải bị hệ thống kiểm tra. Hiển thị loading/empty/error/chưa triển khai đúng thực tế; không dùng số mẫu làm dữ liệu live.
-
-Unit test đặt cạnh logic; E2E theo tests/e2e/<module> khi có hành trình thật. Chưa có npm run dev/build/test được xác minh: [COMMANDS](../../docs/COMMANDS.md).
+Quy tắc: FE chỉ gọi HTTP bằng DTO trong `packages/contracts`; không import DB, Prisma, secret. Ẩn menu không thay kiểm tra quyền ở API. Hiển thị đúng loading/empty/error; không dùng số mẫu làm dữ liệu thật. Xem [quyền BA](../../docs/PERMISSIONS.md), [UI](../../docs/UI_GUIDELINES.md), [quy trình](../../docs/QUY_TRINH.md).

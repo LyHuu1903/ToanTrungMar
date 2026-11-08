@@ -53,11 +53,11 @@ Hình sequence UC01 nhúng rất dài và chữ nhỏ; khi triển khai cần đ
 
 ## S11
 
-**Website và hình ảnh công ty** — [toantrung.com.vn](https://toantrung.com.vn/), [bangled.vn](https://bangled.vn/). Logo/ảnh đã được tham khảo ở các lượt trước; [logo nguồn đã lưu](assets/company-logo.png) dùng để đối chiếu nhận diện, không phải tuyên bố guideline màu/font đã được chốt. Khi triển khai UI cần xác nhận asset đúng phiên bản đang dùng của công ty.
+**Website và hình ảnh công ty** — [toantrung.com.vn](https://toantrung.com.vn/), [bangled.vn](https://bangled.vn/). Logo/ảnh đã được tham khảo ở các lượt trước; logo nguồn dùng để đối chiếu nhận diện, không phải tuyên bố guideline màu/font đã được chốt. Khi triển khai UI cần xác nhận asset đúng phiên bản đang dùng của công ty.
 
 ## S12
 
-**Ảnh đăng nhập người dùng gửi** — [tham chiếu bố cục](assets/login-reference.png). Đây là tham chiếu giao diện, không thay logo chính thức, ma trận BA hoặc chứng minh auth đã triển khai.
+**Ảnh đăng nhập người dùng gửi** — ảnh tham chiếu bố cục. Đây là tham chiếu giao diện, không thay logo chính thức, ma trận BA hoặc chứng minh auth đã triển khai.
 
 ## S13
 

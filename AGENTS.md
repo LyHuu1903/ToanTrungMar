@@ -6,7 +6,7 @@
 
 1. Kiểm tra root, nhánh và Git status; giữ thay đổi của người khác. Nếu chưa có Git, nói rõ.
 2. Đọc task cụ thể, [AI_CONTEXT](AI_CONTEXT.md) và handoff đúng module trong `docs/handoffs/`. Có thể dùng gói do `scripts/prepare-context.js` tạo. Không đọc toàn repo, lockfile, ảnh/PDF/vendor/log dài mặc định.
-3. Dùng `rg` tìm source/caller trực tiếp. Khi thay đổi nghiệp vụ, mở mục liên quan trong `docs/modules/<module>.md`; khi đụng quyền/auth, DB, contract hoặc UI, mở đúng tài liệu theo [AI_START_HERE](AI_START_HERE.md). Tóm tắt không thay source hiện tại.
+3. Dùng `rg` tìm source/caller trực tiếp. Khi thay đổi nghiệp vụ, mở mục liên quan trong `docs/modules/<module>.md`; khi đụng quyền/auth, DB, contract hoặc UI, mở đúng tài liệu theo bảng tài liệu trong [README](README.md). Tóm tắt không thay source hiện tại.
 4. Nêu ngắn mục tiêu, đường dẫn sửa, phần chung ảnh hưởng và cách kiểm tra; tiếp tục phần đã được giao rõ. Tư vấn/review không tự triển khai ứng dụng.
 
 ## Giữ phạm vi và phối hợp
@@ -15,7 +15,7 @@
 - Chỉ sửa task và phụ thuộc tối thiểu. Không nhân tiện đổi UI, refactor/format toàn repo, nâng package, đổi stack/provider hay thêm chức năng.
 - Task mỗi nhóm ở `docs/tasks/m01/`…`m05/`; mẫu JSON trạng thái `template` chưa phải việc được giao. Tạo task từ yêu cầu thực tế; không dùng một ACTIVE_TASK chung cho 5 nhóm.
 - Phần dùng chung bắt buộc ghi đường dẫn cụ thể trong `allowedSharedPaths`, nêu ảnh hưởng và reviewer phù hợp. Không tự nới danh sách chỉ để qua check; không thêm vòng xin phép cho việc đã được giao rõ.
-- Chạy `npm run check:scope -- --task <file>` khi có Git. PR cần diff `--base/--head`; cách dùng tại [SCOPE_CHECK](docs/SCOPE_CHECK.md). Checker chỉ kiểm tra đường dẫn, không thay reviewer/CI/quyền truy cập.
+- Chạy `npm run check:scope -- --task <file>` khi có Git. PR cần diff `--base/--head`; cách dùng tại [QUY_TRINH](docs/QUY_TRINH.md#5-kiểm-tra-phạm-vi-và-nghiệm-thu). Checker chỉ kiểm tra đường dẫn, không thay reviewer/CI/quyền truy cập.
 - Thấy diff ngoài phạm vi: phân biệt thay đổi có sẵn và thay đổi do mình tạo, giữ nguyên công việc người khác, báo phần chưa xử lý. Không reset/revert/xóa/ghi đè tự động. Chỉ sửa lại thay đổi của chính mình khi an toàn và nằm trong việc được giao.
 - Không tự commit/push/merge/deploy khi chỉ được giao sửa cục bộ. Không force push hoặc upload đè cả dự án.
 
@@ -34,4 +34,4 @@
 
 ## Kết thúc và chuyển AI
 
-Chạy kiểm tra phù hợp từ [COMMANDS](docs/COMMANDS.md), đọc diff; ghi lệnh/kết quả thực và phần chưa chạy. Cập nhật handoff module: trạng thái hiện tại, file/contract đã đổi, bằng chứng, blocker, bước tiếp theo. Giữ handoff ngắn; lịch sử dài ở task/PR. Tạo lại gói context sau khi task/handoff/HEAD thay đổi. Không báo hệ thống đã chạy từ kết quả kiểm tra tài liệu/tooling.
+Chạy kiểm tra phù hợp từ [QUY_TRINH](docs/QUY_TRINH.md#1-lệnh-chạy-tại-thư-mục-có-packagejson), đọc diff; ghi lệnh/kết quả thực và phần chưa chạy. Cập nhật handoff module: trạng thái hiện tại, file/contract đã đổi, bằng chứng, blocker, bước tiếp theo. Giữ handoff ngắn; lịch sử dài ở task/PR. Tạo lại gói context sau khi task/handoff/HEAD thay đổi. Không báo hệ thống đã chạy từ kết quả kiểm tra tài liệu/tooling.
